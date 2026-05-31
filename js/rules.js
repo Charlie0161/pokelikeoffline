@@ -73,10 +73,15 @@ const POKELIKE_RULES = {
   },
 
   bosses: {
-    team: "Gym Leaders and the Elite Four/Champion field their original, canonical teams.",
+    team_size: "Gym Leaders and the Elite Four/Champion field a full team of 6 Pokémon.",
+    typing:
+      "The canonical roster is kept and padded with extra Pokémon of the leader's type (the " +
+      "Champion, mixed type, gets a varied team). Filler is never an evolution beyond what its " +
+      "level allows — a low-level slot devolves to the right stage (e.g. Golem -> Geodude).",
     levels:
-      "In Gen I+II, since each map's gym is a random Gen 1/Gen 2 leader, the chosen leader's levels " +
-      "are normalized to a per-map target for consistent difficulty (clamped to level 100).",
+      "Filler Pokémon sit just below the ace, so the canonical aces stay the real threat. In Gen I+II, " +
+      "since each map's gym is a random Gen 1/Gen 2 leader, levels are normalized to a per-map target " +
+      "for consistent difficulty (clamped to level 100).",
   },
 
   items: "Held items and consumables modify stats, healing, XP (e.g. Lucky Egg), and more.",

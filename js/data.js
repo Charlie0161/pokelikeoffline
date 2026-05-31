@@ -1190,11 +1190,28 @@ function createInstance(species, level, isShiny = false, moveTier = 1) {
 const STARTER_IDS = [1, 4, 7];
 const GEN2_STARTER_IDS = [152, 155, 158];
 
-// Returns a boss's canonical team unchanged, EXCEPT it can re-scale levels so the
-// ace hits `aceLevelTarget` (used by the I+II mode, where each map's gym is a
-// random Gen 1/Gen 2 leader and levels must be normalised for consistent
-// difficulty). Levels are clamped to the [1, 100] range. The leader's original
-// Pokémon are always preserved — no padding, no substitutions.
+// All non-legendary, non-starter species ids of a given type within a gen range.
+// Uses the in-memory static pokedex (loaded at boot) so it's synchronous.
+function getSpeciesIdsByType(type, maxGenId = 151) {
+  const t = (type || '').toLowerCase();
+  const ids = [];
+  for (let id = 1; id <= maxGenId; id++) {
+    if (LEGENDARY_ID_SET.has(id) || STARTER_IDS.includes(id) || GEN2_STARTER_IDS.includes(id)) continue;
+    const types = getSpeciesTypes(id);
+    if (types && types.some(x => x.toLowerCase() === t)) ids.push(id);
+  }
+  return ids;
+}
+
+// Pads a boss's canonical team up to 6 Pokémon, all of the leader's type (or
+// strong random ones for a 'Mixed' champion). Filler Pokémon sit below the ace,
+// so the canonical aces stay the real threat. Optionally re-scales levels so the
+// ace hits `aceLevelTarget` (used by the I+II mode to normalise difficulty).
+//
+// Every filler is run through resolveEvoForLevel(id, level): a species is never
+// shown as an evolution beyond its level threshold (Golem@13 → Geodude), and is
+// evolved forward when the level allows it (a Champion's filler reaches its final
+// form). This keeps the leader's type while avoiding premature evolutions.
 async function buildBossTeam(baseTeam, leaderType, maxGenId = 151, aceLevelTarget = null) {
   let team = baseTeam.map(p => ({ ...p }));
   const curAce = Math.max(...team.map(p => p.level));
@@ -1202,7 +1219,32 @@ async function buildBossTeam(baseTeam, leaderType, maxGenId = 151, aceLevelTarge
     const delta = aceLevelTarget - curAce;
     team = team.map(p => ({ ...p, level: Math.max(1, Math.min(100, p.level + delta)) }));
   }
-  return team;
+  if (team.length >= 6) return team.slice(0, 6);
+
+  const ace = Math.max(...team.map(p => p.level));
+  const used = new Set(team.map(p => p.speciesId ?? p.id));
+  const isMixed = !leaderType || leaderType.toLowerCase() === 'mixed';
+  let pool = isMixed ? [] : getSpeciesIdsByType(leaderType, maxGenId).filter(id => !used.has(id));
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+
+  const need = 6 - team.length;
+  // Pick {id, level} per slot, resolving each to the evolution stage that fits
+  // the slot's level. Cycling lets small type pools (e.g. Dragon) still fill 6.
+  const picks = [];
+  for (let k = 0, poolIdx = 0; picks.length < need && k < need * 60; k++) {
+    const lvl = Math.max(1, Math.min(100, ace - 1 - picks.length)); // below the ace, descending
+    let id;
+    if (pool.length) { id = pool[poolIdx % pool.length]; poolIdx++; }
+    else { id = 1 + Math.floor(rng() * maxGenId); if (LEGENDARY_ID_SET.has(id)) continue; }
+    id = resolveEvoForLevel(id, lvl); // no evolution beyond its level threshold
+    picks.push({ id, level: lvl });
+  }
+  const fetched = await Promise.all(picks.map(p => fetchPokemonById(p.id)));
+  fetched.forEach((sp, idx) => {
+    if (!sp) return;
+    team.push({ speciesId: sp.id, name: sp.name, types: sp.types, baseStats: sp.baseStats, level: picks[idx].level });
+  });
+  return team.slice(0, 6);
 }
 
 
