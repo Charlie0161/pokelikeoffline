@@ -2634,24 +2634,67 @@ h1, h2, .pixel-font {
 #gameover-screen   { background: rgba(10, 0, 0, 0.75); }
 #transition-screen { background: rgba(0, 0, 0, 0.55); }
 
-/* ---- Discord Link ---- */
-.discord-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #fff;
-  text-decoration: none;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 8px;
-  opacity: 0.85;
-  margin-top: 10px;
-  transition: opacity 0.15s;
-  background: #5865F2;
-  padding: 6px 10px;
-  border-radius: 4px;
+/* ---- Rules Modal ---- */
+.rules-modal-overlay {
+  position: fixed; inset: 0; z-index: 400;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(10, 8, 14, 0.72);
+  backdrop-filter: blur(4px);
+  padding: 16px;
 }
-.discord-link:hover { opacity: 1; }
-.discord-link svg { width: 16px; height: 16px; fill: #fff; flex-shrink: 0; }
+.rules-modal {
+  position: relative;
+  width: min(94vw, 760px);
+  max-height: 88vh;
+  display: flex; flex-direction: column;
+  background: linear-gradient(160deg, rgba(40,34,52,0.96), rgba(26,22,36,0.96));
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 14px;
+  box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+  color: #f1ecf6;
+  overflow: hidden;
+}
+.rules-modal-close {
+  position: absolute; top: 8px; right: 10px;
+  background: rgba(255,255,255,0.08); color: #fff;
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 8px;
+  width: 30px; height: 30px; cursor: pointer; font-size: 13px; line-height: 1;
+}
+.rules-modal-close:hover { background: rgba(255,255,255,0.18); }
+.rules-modal-head { padding: 16px 16px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.rules-modal-title {
+  font-family: 'Press Start 2P', monospace; font-size: 13px; margin-bottom: 12px; color: #ffd27a;
+}
+.rules-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.rules-tab {
+  background: rgba(255,255,255,0.06); color: #d8cfe6;
+  border: 1px solid rgba(255,255,255,0.14); border-radius: 10px;
+  padding: 8px 12px; cursor: pointer; font-size: 12px; transition: all 0.15s;
+}
+.rules-tab:hover { background: rgba(255,255,255,0.12); }
+.rules-tab--active {
+  background: linear-gradient(135deg, #f0a830, #e07a2a); color: #2a1c08;
+  border-color: transparent; font-weight: bold;
+}
+.rules-modal-body { padding: 16px; overflow-y: auto; line-height: 1.55; font-size: 13px; }
+.rules-modal-body .rules-lead { color: #cfc6dc; margin: 0 0 14px; }
+.rules-sec { margin-bottom: 16px; }
+.rules-sec h3 { font-size: 13px; margin: 0 0 6px; color: #ffd27a; }
+.rules-sec ul { margin: 0; padding-left: 18px; }
+.rules-sec li { margin-bottom: 5px; }
+.rules-sec b { color: #ffe9c2; }
+.rules-foot { color: #9a90a8; font-size: 11px; margin-top: 8px; }
+.rules-foot a, .rules-lead a { color: #ffce7a; }
+.rules-modal-body code {
+  background: rgba(255,255,255,0.1); padding: 1px 5px; border-radius: 4px; font-size: 11px;
+}
+.rules-spec {
+  background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px; padding: 12px; margin: 0;
+  max-height: 56vh; overflow: auto;
+  font-family: 'SFMono-Regular', Consolas, monospace; font-size: 11px; line-height: 1.45;
+  color: #d6e6c8; white-space: pre; -webkit-overflow-scrolling: touch;
+}
 
 /* ======================================================
    DARK MODE

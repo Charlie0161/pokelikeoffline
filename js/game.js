@@ -102,21 +102,22 @@ async function initGame() {
   if (typeof initCloudSave === 'function') await initCloudSave();
   // Generation toggle — selection is read when Normal/Nuzlocke is clicked
   // and persists across reloads via localStorage.
-  let selectedGen = Number(localStorage.getItem('poke_selected_gen')) === 2 ? 2 : 1;
+  const _savedGen = localStorage.getItem('poke_selected_gen');
+  let selectedGen = (_savedGen === '2' || _savedGen === 'both') ? _savedGen : '1'; // '1' | '2' | 'both'
   const syncGenButtons = () => {
     document.querySelectorAll('#gen-toggle .gen-btn').forEach(b =>
-      b.classList.toggle('gen-btn--active', Number(b.dataset.gen) === selectedGen));
+      b.classList.toggle('gen-btn--active', String(b.dataset.gen) === selectedGen));
   };
   syncGenButtons();
   document.querySelectorAll('#gen-toggle .gen-btn').forEach(btn => {
     btn.onclick = () => {
-      selectedGen = Number(btn.dataset.gen) || 1;
-      localStorage.setItem('poke_selected_gen', String(selectedGen));
+      selectedGen = String(btn.dataset.gen || '1');
+      localStorage.setItem('poke_selected_gen', selectedGen);
       syncGenButtons();
     };
   });
-  document.getElementById('btn-new-run').onclick  = () => startNewRun(false, selectedGen === 2);
-  document.getElementById('btn-hard-run').onclick = () => startNewRun(true,  selectedGen === 2);
+  document.getElementById('btn-new-run').onclick  = () => startNewRun(false, selectedGen === '2', null, selectedGen === 'both');
+  document.getElementById('btn-hard-run').onclick = () => startNewRun(true,  selectedGen === '2', null, selectedGen === 'both');
 
   const endlessBtn = document.getElementById('btn-endless-run');
   if (endlessBtn) {
@@ -182,13 +183,23 @@ async function initGame() {
   }
 }
 
-async function startNewRun(nuzlockeMode = false, gen2Mode = false, forcedStarterId = null) {
+async function startNewRun(nuzlockeMode = false, gen2Mode = false, forcedStarterId = null, bothGens = false) {
   runGeneration++;
   clearEndlessState();
   const savedTrainer = localStorage.getItem('poke_trainer') || null;
   const seed = (Date.now() ^ (Math.random() * 0x100000000 | 0)) >>> 0;
   seedRng(seed);
-  state = { currentMap: 0, currentNode: null, team: [], items: [], badges: 0, map: null, eliteIndex: 0, trainer: savedTrainer || 'boy', starterSpeciesId: null, maxTeamSize: 1, nuzlockeMode, gen2Mode, silverBeaten: 0, usedPokecenter: false, pickedUpItem: false, runSeed: seed };
+  state = { currentMap: 0, currentNode: null, team: [], items: [], badges: 0, map: null, eliteIndex: 0, trainer: savedTrainer || 'boy', starterSpeciesId: null, maxTeamSize: 1, nuzlockeMode, gen2Mode, bothGens, silverBeaten: 0, usedPokecenter: false, pickedUpItem: false, runSeed: seed };
+  if (bothGens) {
+    // Roll which generation's leader appears at each gym slot, and a random
+    // Elite Four lineup (4 members + champion), mixing Gen 1 and Gen 2.
+    state.gymGens = Array.from({ length: 8 }, () => (rng() < 0.5 ? 1 : 2));
+    const elitePool = [];
+    for (let idx = 0; idx < 4; idx++) { elitePool.push({ gen: 1, idx }); elitePool.push({ gen: 2, idx }); }
+    for (let i = elitePool.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [elitePool[i], elitePool[j]] = [elitePool[j], elitePool[i]]; }
+    const champ = rng() < 0.5 ? { gen: 1, idx: 4 } : { gen: 2, idx: 4 };
+    state.eliteLineup = [...elitePool.slice(0, 4), champ];
+  }
   if (forcedStarterId && savedTrainer) {
     await pickForcedStarter(forcedStarterId);
     return;
@@ -285,7 +296,8 @@ async function showStarterSelect() {
   }
 
   const startLevel = 5;
-  const activeStarterIds = state.gen2Mode ? GEN2_STARTER_IDS : STARTER_IDS;
+  const activeStarterIds = state.bothGens ? [...STARTER_IDS, ...GEN2_STARTER_IDS]
+                          : state.gen2Mode ? GEN2_STARTER_IDS : STARTER_IDS;
   const starters = state.isEndlessMode ? [] : await Promise.all(activeStarterIds.map(id => fetchPokemonById(id)));
 
   container.innerHTML = '';
@@ -736,6 +748,7 @@ function getStageGenRange(stage) {
 }
 function getCatchGenRange() {
   if (state.isEndlessMode) return getStageGenRange(endlessState.stageNumber);
+  if (state.bothGens) return { minGenId: 1, maxGenId: 251 };
   if (state.gen2Mode) return { minGenId: 152, maxGenId: 251 };
   return { minGenId: 1, maxGenId: 151 };
 }
@@ -903,37 +916,13 @@ async function doBattleNode(node) {
   showMapScreen();
 }
 
-async function doBossNode(node) {
-  if (state.gen2Mode) {
-    if (state.currentMap === 8) { await doGen2Elite4(); return; }
-    const leader = JOHTO_GYM_LEADERS[state.currentMap];
-    const enemyTeam = leader.team.map(p => ({
-      ...createInstance(p, p.level, false, leader.moveTier ?? 1),
-      heldItem: p.heldItem || null,
-    }));
-    showScreen('battle-screen');
-    document.getElementById('battle-title').textContent = `Gym Battle vs ${leader.name}!`;
-    document.getElementById('battle-subtitle').textContent = `${leader.badge} is on the line!`;
-    await runBattleScreen(enemyTeam, true, () => {
-      state.badges++;
-      advanceFromNode(state.map, node.id);
-      showBadgeScreen(leader);
-      const ach = unlockAchievement(`gym_${state.currentMap}`);
-      if (ach) showAchievementToast(ach);
-    }, () => { showGameOver(); }, leader.name, [], 3);
-    return;
-  }
-
-  if (state.currentMap === 8) {
-    await doElite4();
-    return;
-  }
-  const leader = GYM_LEADERS[state.currentMap];
-  const enemyTeam = leader.team.map(p => ({
+// Runs a gym battle for the given leader (team padded to 6 of the leader's type).
+async function runGymBattle(node, leader, maxGenId, aceTarget) {
+  const built = await buildBossTeam(leader.team, leader.type, maxGenId, aceTarget);
+  const enemyTeam = built.map(p => ({
     ...createInstance(p, p.level, false, leader.moveTier ?? 1),
     heldItem: p.heldItem || null,
   }));
-
   showScreen('battle-screen');
   document.getElementById('battle-title').textContent = `Gym Battle vs ${leader.name}!`;
   document.getElementById('battle-subtitle').textContent = `${leader.badge} is on the line!`;
@@ -943,9 +932,25 @@ async function doBossNode(node) {
     showBadgeScreen(leader);
     const ach = unlockAchievement(`gym_${state.currentMap}`);
     if (ach) showAchievementToast(ach);
-  }, () => {
-    showGameOver();
-  }, leader.name, [], 3);
+  }, () => { showGameOver(); }, leader.name, [], 3);
+}
+
+async function doBossNode(node) {
+  // I+II: gym is a random Gen 1/Gen 2 leader for this slot; levels normalised.
+  if (state.bothGens) {
+    if (state.currentMap === 8) { await doBothElite4(); return; }
+    const gen = (state.gymGens && state.gymGens[state.currentMap]) || 1;
+    const leader = (gen === 2 ? JOHTO_GYM_LEADERS : GYM_LEADERS)[state.currentMap];
+    await runGymBattle(node, leader, gen === 2 ? 251 : 151, bothGensMapAceLevel(state.currentMap));
+    return;
+  }
+  if (state.gen2Mode) {
+    if (state.currentMap === 8) { await doGen2Elite4(); return; }
+    await runGymBattle(node, JOHTO_GYM_LEADERS[state.currentMap], 251, null);
+    return;
+  }
+  if (state.currentMap === 8) { await doElite4(); return; }
+  await runGymBattle(node, GYM_LEADERS[state.currentMap], 151, null);
 }
 
 async function doElite4() {
@@ -953,7 +958,8 @@ async function doElite4() {
   for (let i = state.eliteIndex; i < bosses.length; i++) {
     state.eliteIndex = i;
     const boss = bosses[i];
-    const enemyTeam = boss.team.map(p => createInstance(p, p.level, false, 2));
+    const built = await buildBossTeam(boss.team, boss.type, 151, null);
+    const enemyTeam = built.map(p => createInstance(p, p.level, false, 2));
 
     showScreen('battle-screen');
     document.getElementById('battle-title').textContent = `${boss.title}: ${boss.name}!`;
@@ -969,6 +975,33 @@ async function doElite4() {
   }
   const eliteAch = unlockAchievement('elite_four');
   if (eliteAch) showAchievementToast(eliteAch);
+  showWinScreen();
+}
+
+// I+II league: the randomly-chosen lineup (4 Elite + champion, mixing gens),
+// each padded to 6 and normalised to the Gen 1 Elite Four difficulty curve.
+async function doBothElite4() {
+  const lineup = state.eliteLineup || [];
+  for (let i = state.eliteIndex; i < lineup.length; i++) {
+    state.eliteIndex = i;
+    const slot = lineup[i];
+    const member = (slot.gen === 2 ? GEN2_ELITE_4 : ELITE_4)[slot.idx];
+    const target = Math.max(...ELITE_4[Math.min(i, ELITE_4.length - 1)].team.map(p => p.level));
+    const built = await buildBossTeam(member.team, member.type, 251, target);
+    const enemyTeam = built.map(p => ({ ...createInstance(p, p.level, false, 2), heldItem: p.heldItem || null }));
+
+    showScreen('battle-screen');
+    document.getElementById('battle-title').textContent = `${member.title}: ${member.name}!`;
+    document.getElementById('battle-subtitle').textContent = i === lineup.length - 1 ? 'Final Battle!' : `Elite Four — Battle ${i + 1}/${lineup.length - 1}`;
+    const won = await new Promise(resolve => {
+      runBattleScreen(enemyTeam, true, () => resolve(true), () => resolve(false), member.name);
+    });
+    if (!won) { showGameOver(); return; }
+    if (i < lineup.length - 1) await showEliteTransition(member.name, i + 1);
+  }
+  const eliteAch = unlockAchievement('elite_four');
+  if (eliteAch) showAchievementToast(eliteAch);
+  state.eliteIndex = 0;
   showWinScreen();
 }
 
@@ -1084,7 +1117,8 @@ async function doGen2Elite4() {
         nextBoss: boss,
       });
     }
-    const enemyTeam = boss.team.map(p => ({ ...createInstance(p, p.level, false, 2), heldItem: p.heldItem || null }));
+    const built = await buildBossTeam(boss.team, boss.type, 251, null);
+    const enemyTeam = built.map(p => ({ ...createInstance(p, p.level, false, 2), heldItem: p.heldItem || null }));
     showScreen('battle-screen');
     document.getElementById('battle-title').textContent = `${boss.title}: ${boss.name}!`;
     document.getElementById('battle-subtitle').textContent =
@@ -2407,8 +2441,17 @@ async function runInteractiveBattle(pTeamRaw, eTeamRaw, enemyItems, opts = {}) {
 
 // Anti over-level: cap the team at the current map's boss level (+ buffer) so
 // XP keeps flowing (1/2/3 per fight) but the team never blows past the challenge.
+// I+II: a consistent per-map ace level (Gen 1 curve) so the difficulty doesn't
+// swing with whichever gen's leader is randomly rolled.
+function bothGensMapAceLevel(mapIndex) {
+  if (mapIndex >= 8) return Math.max(...ELITE_4.flatMap(b => b.team).map(p => p.level));
+  const t = GYM_LEADERS[mapIndex]?.team;
+  return t && t.length ? Math.max(...t.map(p => p.level)) : 100;
+}
+
 function getLevelCapForMap() {
   const BUFFER = 2;
+  if (state.bothGens) return Math.min(100, bothGensMapAceLevel(state.currentMap) + BUFFER);
   let team;
   if (state.gen2Mode) {
     team = state.currentMap >= 8 ? GEN2_ELITE_4.flatMap(b => b.team) : JOHTO_GYM_LEADERS[state.currentMap]?.team;

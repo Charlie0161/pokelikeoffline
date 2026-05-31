@@ -390,6 +390,13 @@ function getNodeSprite(node) {
   if (node.type === NODE_TYPES.BOSS) {
     if (typeof state !== 'undefined' && state.isEndlessMode) return 'sprites/misteryTrainer.png';
     const mi = node.mapIndex ?? -1;
+    if (typeof state !== 'undefined' && state.bothGens) {
+      if (mi >= 0 && mi < 8) {
+        const gen = (state.gymGens && state.gymGens[mi]) || 1;
+        return gen === 2 ? JOHTO_GYM_LEADER_SPRITES[mi] : GYM_LEADER_SPRITES[mi];
+      }
+      return 'sprites/champ.png';
+    }
     if (typeof state !== 'undefined' && state.gen2Mode) {
       if (mi === 17) return 'https://play.pokemonshowdown.com/sprites/trainers/red.png';
       if (mi === 8)  return 'sprites/gen2/lance.png';
@@ -814,7 +821,9 @@ function getNodeLabel(node) {
   if (node.visited) return 'Visited';
   if (node.type === NODE_TYPES.BOSS) {
     const mi = node.mapIndex ?? -1;
-    const isGen2 = typeof state !== 'undefined' && state.gen2Mode;
+    const bothGens = typeof state !== 'undefined' && state.bothGens;
+    const isGen2 = (typeof state !== 'undefined' && state.gen2Mode) ||
+      (bothGens && mi >= 0 && mi < 8 && state.gymGens && state.gymGens[mi] === 2);
     const leaders = isGen2 ? (typeof JOHTO_GYM_LEADERS !== 'undefined' ? JOHTO_GYM_LEADERS : null) : (typeof GYM_LEADERS !== 'undefined' ? GYM_LEADERS : null);
     if (leaders && mi >= 0 && mi < leaders.length) {
       const leader = leaders[mi];

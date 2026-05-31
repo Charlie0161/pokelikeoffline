@@ -4624,7 +4624,6 @@ const PATCH_NOTES = [
           'Starters now correctly benefit from the Shiny Charm',
           'Traded Pokémon can now be shiny',
           'Lucky Egg description corrected — it boosts XP after every battle, not just wild ones',
-          'Discord link is now readable regardless of background color',
         ],
       },
     ],
