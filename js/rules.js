@@ -73,13 +73,10 @@ const POKELIKE_RULES = {
   },
 
   bosses: {
-    team_size: "Gym Leaders and Elite Four/Champion members field the maximum 6 Pokémon.",
-    typing:
-      "A leader's extra Pokémon respect the leader's type (e.g. a Water leader gets Water Pokémon). " +
-      "The Champion (mixed type) gets a varied strong team.",
+    team: "Gym Leaders and the Elite Four/Champion field their original, canonical teams.",
     levels:
-      "The canonical roster keeps the strongest 'ace'; filler Pokémon sit just below it. In Gen I+II, " +
-      "the chosen leader's levels are normalized to a per-map target for consistent difficulty.",
+      "In Gen I+II, since each map's gym is a random Gen 1/Gen 2 leader, the chosen leader's levels " +
+      "are normalized to a per-map target for consistent difficulty (clamped to level 100).",
   },
 
   items: "Held items and consumables modify stats, healing, XP (e.g. Lucky Egg), and more.",

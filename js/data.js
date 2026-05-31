@@ -1190,23 +1190,11 @@ function createInstance(species, level, isShiny = false, moveTier = 1) {
 const STARTER_IDS = [1, 4, 7];
 const GEN2_STARTER_IDS = [152, 155, 158];
 
-// All non-legendary, non-starter species ids of a given type within a gen range.
-// Uses the in-memory static pokedex (loaded at boot) so it's synchronous.
-function getSpeciesIdsByType(type, maxGenId = 151) {
-  const t = (type || '').toLowerCase();
-  const ids = [];
-  for (let id = 1; id <= maxGenId; id++) {
-    if (LEGENDARY_ID_SET.has(id) || STARTER_IDS.includes(id) || GEN2_STARTER_IDS.includes(id)) continue;
-    const types = getSpeciesTypes(id);
-    if (types && types.some(x => x.toLowerCase() === t)) ids.push(id);
-  }
-  return ids;
-}
-
-// Pads a boss's canonical team up to 6 Pokémon, all of the leader's type (or
-// strong random ones for a 'Mixed' champion). Optionally re-scales levels so the
-// ace hits `aceLevelTarget` (used by the I+II mode to normalise difficulty).
-// Filler Pokémon sit below the ace so the canonical aces stay the real threat.
+// Returns a boss's canonical team unchanged, EXCEPT it can re-scale levels so the
+// ace hits `aceLevelTarget` (used by the I+II mode, where each map's gym is a
+// random Gen 1/Gen 2 leader and levels must be normalised for consistent
+// difficulty). Levels are clamped to the [1, 100] range. The leader's original
+// Pokémon are always preserved — no padding, no substitutions.
 async function buildBossTeam(baseTeam, leaderType, maxGenId = 151, aceLevelTarget = null) {
   let team = baseTeam.map(p => ({ ...p }));
   const curAce = Math.max(...team.map(p => p.level));
@@ -1214,29 +1202,7 @@ async function buildBossTeam(baseTeam, leaderType, maxGenId = 151, aceLevelTarge
     const delta = aceLevelTarget - curAce;
     team = team.map(p => ({ ...p, level: Math.max(1, Math.min(100, p.level + delta)) }));
   }
-  if (team.length >= 6) return team.slice(0, 6);
-
-  const ace = Math.max(...team.map(p => p.level));
-  const used = new Set(team.map(p => p.speciesId ?? p.id));
-  const isMixed = !leaderType || leaderType.toLowerCase() === 'mixed';
-  let pool = isMixed ? [] : getSpeciesIdsByType(leaderType, maxGenId).filter(id => !used.has(id));
-  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
-
-  const need = 6 - team.length;
-  const chosen = [];
-  for (let k = 0; chosen.length < need && k < need * 60; k++) {
-    let id;
-    if (pool.length) id = pool[chosen.length % pool.length]; // cycle (small pools repeat)
-    else { id = 1 + Math.floor(rng() * maxGenId); if (LEGENDARY_ID_SET.has(id)) continue; }
-    chosen.push(id);
-  }
-  const fetched = await Promise.all(chosen.map(id => fetchPokemonById(id)));
-  fetched.forEach((sp, idx) => {
-    if (!sp) return;
-    const lvl = Math.max(1, Math.min(100, ace - 1 - idx)); // below the ace, descending
-    team.push({ speciesId: sp.id, name: sp.name, types: sp.types, baseStats: sp.baseStats, level: lvl });
-  });
-  return team.slice(0, 6);
+  return team;
 }
 
 
