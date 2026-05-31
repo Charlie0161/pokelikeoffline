@@ -2668,6 +2668,9 @@ function retryCurrentMap() {
   state.items = JSON.parse(JSON.stringify(snap.items));
   state.maxTeamSize = snap.maxTeamSize;
   state.pendingRetry = false;
+  // Restart the map from scratch — on the Elite Four (map 8) this means the
+  // whole gauntlet, not just the boss you fell on (eliteIndex tracks progress).
+  state.eliteIndex = 0;
   // New seed → a different map layout (deterministic on reload via saveRun).
   const newSeed = (Date.now() ^ (Math.random() * 0x100000000 | 0)) >>> 0;
   seedRng(newSeed);
