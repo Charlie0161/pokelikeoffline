@@ -895,7 +895,7 @@ async function doBattleNode(node) {
   if (titleEl) titleEl.textContent = `Wild ${enemy.name} appeared!`;
   if (subEl) subEl.textContent = `Level ${enemy.level}`;
   const won = await new Promise(resolve => {
-    runBattleScreen([enemy], false, () => resolve(true), () => resolve(false), null, [], 0);
+    runBattleScreen([enemy], false, () => resolve(true), () => resolve(false), null, [], 1);
   });
   if (!won) { showGameOver(); return; }
   if (state.isEndlessMode) await applyEndlessBugTrait();
@@ -920,7 +920,7 @@ async function doBossNode(node) {
       showBadgeScreen(leader);
       const ach = unlockAchievement(`gym_${state.currentMap}`);
       if (ach) showAchievementToast(ach);
-    }, () => { showGameOver(); }, leader.name, [], 2);
+    }, () => { showGameOver(); }, leader.name, [], 3);
     return;
   }
 
@@ -945,7 +945,7 @@ async function doBossNode(node) {
     if (ach) showAchievementToast(ach);
   }, () => {
     showGameOver();
-  }, leader.name);
+  }, leader.name, [], 3);
 }
 
 async function doElite4() {
@@ -2405,6 +2405,20 @@ async function runInteractiveBattle(pTeamRaw, eTeamRaw, enemyItems, opts = {}) {
   return { playerWon: alive(pTeam) && !alive(eTeam), pTeam, eTeam, playerParticipants };
 }
 
+// Anti over-level: cap the team at the current map's boss level (+ buffer) so
+// XP keeps flowing (1/2/3 per fight) but the team never blows past the challenge.
+function getLevelCapForMap() {
+  const BUFFER = 2;
+  let team;
+  if (state.gen2Mode) {
+    team = state.currentMap >= 8 ? GEN2_ELITE_4.flatMap(b => b.team) : JOHTO_GYM_LEADERS[state.currentMap]?.team;
+  } else {
+    team = state.currentMap >= 8 ? ELITE_4.flatMap(b => b.team) : GYM_LEADERS[state.currentMap]?.team;
+  }
+  if (!team || !team.length) return 100;
+  return Math.min(100, Math.max(...team.map(p => p.level)) + BUFFER);
+}
+
 function runBattleScreen(enemyTeam, isBoss, onWin, onLose, enemyName = null, enemyItems = [], baseGainOverride = null, showPlayerPortrait = null, traitsConfig = null, forceAllParticipants = false) {
   // Snapshot the run generation — if the player resets mid-battle this no longer
   // matches runGeneration, and every continuation below bails instead of
@@ -2493,7 +2507,7 @@ function runBattleScreen(enemyTeam, isBoss, onWin, onLose, enemyName = null, ene
       const effectiveParticipants = forceAllParticipants
         ? new Set(state.team.map((_, i) => i))
         : playerParticipants;
-      const levelUps = applyLevelGain(state.team, state.nuzlockeMode ? [] : state.items, effectiveParticipants, maxEnemyLevel, state.nuzlockeMode, baseGainOverride, state.isEndlessMode ? Infinity : 100);
+      const levelUps = applyLevelGain(state.team, state.nuzlockeMode ? [] : state.items, effectiveParticipants, maxEnemyLevel, state.nuzlockeMode, baseGainOverride, state.isEndlessMode ? Infinity : getLevelCapForMap());
       const skipAll = autoSkip || manuallySkipped || _battleAuto;
       battleSpeedMultiplier = skipAll ? SKIP_SPEED : 1;
       skipBtn.textContent = 'Skip';

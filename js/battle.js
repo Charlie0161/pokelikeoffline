@@ -568,7 +568,7 @@ function applyLevelGain(team, bagItems, participantIdxs, maxEnemyLevel = 0, hard
     const gain = baseGain + luckyBonus;
     const oldLevel = p.level;
     const newLevel = Math.min(oldLevel + gain, levelCap);
-    if (newLevel === oldLevel) continue; // already at cap
+    if (newLevel <= oldLevel) continue; // already at/over cap — never demote
 
     const preHp = p.currentHp;
     p.level = newLevel;
