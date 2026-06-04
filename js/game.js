@@ -2439,8 +2439,9 @@ async function runInteractiveBattle(pTeamRaw, eTeamRaw, enemyItems, opts = {}) {
   return { playerWon: alive(pTeam) && !alive(eTeam), pTeam, eTeam, playerParticipants };
 }
 
-// Anti over-level: cap the team at the current map's boss level (+ buffer) so
-// XP keeps flowing (1/2/3 per fight) but the team never blows past the challenge.
+// Anti over-level: cap the team at the current map's boss level so XP keeps
+// flowing (1/2/3 per fight) but the team never blows past the challenge. The cap
+// is exactly the highest-level Pokémon of the map's leader (no buffer).
 // I+II: a consistent per-map ace level (Gen 1 curve) so the difficulty doesn't
 // swing with whichever gen's leader is randomly rolled.
 function bothGensMapAceLevel(mapIndex) {
@@ -2450,8 +2451,7 @@ function bothGensMapAceLevel(mapIndex) {
 }
 
 function getLevelCapForMap() {
-  const BUFFER = 2;
-  if (state.bothGens) return Math.min(100, bothGensMapAceLevel(state.currentMap) + BUFFER);
+  if (state.bothGens) return Math.min(100, bothGensMapAceLevel(state.currentMap));
   let team;
   if (state.gen2Mode) {
     team = state.currentMap >= 8 ? GEN2_ELITE_4.flatMap(b => b.team) : JOHTO_GYM_LEADERS[state.currentMap]?.team;
@@ -2459,7 +2459,7 @@ function getLevelCapForMap() {
     team = state.currentMap >= 8 ? ELITE_4.flatMap(b => b.team) : GYM_LEADERS[state.currentMap]?.team;
   }
   if (!team || !team.length) return 100;
-  return Math.min(100, Math.max(...team.map(p => p.level)) + BUFFER);
+  return Math.min(100, Math.max(...team.map(p => p.level)));
 }
 
 function runBattleScreen(enemyTeam, isBoss, onWin, onLose, enemyName = null, enemyItems = [], baseGainOverride = null, showPlayerPortrait = null, traitsConfig = null, forceAllParticipants = false) {
