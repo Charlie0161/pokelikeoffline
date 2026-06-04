@@ -1,40 +1,47 @@
-# Pokelike (còpia local)
+# Pokelike (fork)
 
-Joc roguelike de Pokémon descarregat de https://pokelike.xyz/ per jugar-hi i modificar-lo en local.
+A Pokémon roguelike, forked from https://pokelike.xyz/ to play and modify locally.
 
-## Com jugar
+**▶ Play the demo: https://pcasaspere.github.io/pokelike_v2/**
 
-Cal un servidor estàtic (no s'obre amb `file://` per restriccions del navegador):
+## How to play
+
+You need a static server (it won't open via `file://` due to browser restrictions):
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Obre http://127.0.0.1:8000/ al navegador.
+Then open http://127.0.0.1:8000/ in your browser.
 
-## Estructura
+## Structure
 
-- `index.html` — punt d'entrada, tota la maquetació de pantalles
-- `css/style.css` — estils
-- `js/` — lògica del joc:
-  - `data.js` — dades de Pokémon, moviments, items
-  - `map.js` — generació del mapa / nodes
-  - `battle.js` — sistema de combat
-  - `endless.js` — mode Battle Tower
-  - `ui.js` — interfície i pantalles
-  - `game.js` — bucle i estat principal
-  - `cloud-save.js` — desat al núvol (opcional, apunta a save.pokelike.xyz)
-- `ui/`, `sprites/` — imatges locals (fons, botons, etc.)
+- `index.html` — entry point, all the screen markup
+- `css/style.css` — styles
+- `js/` — game logic:
+  - `data.js` — Pokémon, moves and item data
+  - `map.js` — map / node generation
+  - `battle.js` — battle system
+  - `endless.js` — Battle Tower mode
+  - `ui.js` — interface and screens
+  - `game.js` — main loop and state
+  - `rules.js` — human-readable rules + machine-readable LLM spec
+  - `cloud-save.js` — cloud save (optional, points to save.pokelike.xyz)
+- `ui/`, `sprites/` — local images (backgrounds, buttons, etc.)
 
 ## Notes
 
-- Els sprites dels Pokémon i entrenadors es carreguen en temps d'execució des de
-  CDNs externs (PokeAPI i Pokémon Showdown), així que cal connexió a internet.
-- El desat de partida usa `localStorage` del navegador.
-- `cloud-save.js` parla amb un servidor extern; el joc funciona sense ell.
+- Pokémon and trainer sprites are loaded at runtime from external CDNs (PokeAPI and
+  Pokémon Showdown), so an internet connection is required.
+- Game saves use the browser's `localStorage`.
+- `cloud-save.js` talks to an external server; the game works fine without it.
 
-## Modificar
+## Modifying
 
-Edita qualsevol fitxer de `js/` o `css/` i recarrega la pàgina (Cmd+Shift+R per
-saltar la memòria cau). Per exemple, valors de combat a `js/battle.js` o dades de
-Pokémon a `js/data.js`.
+Edit any file under `js/` or `css/` and reload the page (Cmd+Shift+R to bypass the
+cache). For example, battle values in `js/battle.js` or Pokémon data in `js/data.js`.
+
+## Credits
+
+Fork of [pokelike.xyz](https://pokelike.xyz/). Fan-made project, not affiliated with
+Nintendo, Game Freak, or The Pokémon Company.
