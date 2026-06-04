@@ -2634,29 +2634,6 @@ h1, h2, .pixel-font {
 #gameover-screen   { background: rgba(10, 0, 0, 0.75); }
 #transition-screen { background: rgba(0, 0, 0, 0.55); }
 
-/* ---- Fork badge (title screen) ---- */
-.fork-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin: 2px 0 8px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  font-size: 10px;
-  letter-spacing: 0.3px;
-  text-decoration: none;
-  color: #2a1c08;
-  background: linear-gradient(135deg, #ffd27a, #f0a830);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 2px 8px rgba(240, 168, 48, 0.35);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-.fork-badge strong { font-weight: 800; }
-.fork-badge:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(240, 168, 48, 0.5);
-}
-
 /* ---- Rules Modal ---- */
 .rules-modal-overlay {
   position: fixed; inset: 0; z-index: 400;
