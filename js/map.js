@@ -156,14 +156,13 @@ function generateMap(mapIndex, nuzlockeMode = false, gen2Mode = false) {
   ]);
 
   // Layers 2+: random content nodes (Silver maps use one fewer content layer)
-  const midCi = Math.floor(contentCount / 2); // extra pokecenter at the midpoint
   for (let ci = 0; ci < contentCount; ci++) {
     const l    = ci + 2;
     const size = CONTENT_SIZES[ci];
     const layer = Array.from({ length: size }, (_, c) => makeNode(`n${l}_${c}`, pickType(ci), l, c));
 
-    // Guarantee a pokecenter in the last content layer AND one at the midpoint.
-    if ((ci === contentCount - 1 || ci === midCi) && !layer.some(n => n.type === NODE_TYPES.POKECENTER)) {
+    // Guarantee a single pokecenter, in the last content layer only (before the boss).
+    if (ci === contentCount - 1 && !layer.some(n => n.type === NODE_TYPES.POKECENTER)) {
       const idx = Math.floor(rng() * size);
       layer[idx].type = NODE_TYPES.POKECENTER;
     }
