@@ -2616,14 +2616,17 @@ function buildParticles(type, from, to) {
 }
 
 // Brief screen shake on impactful hits. level: 'light' | 'heavy' | 'brutal'.
+// Shake disabled — set getSettings().battleShake = true to re-enable.
 function battleShake(level = 'light') {
-  const field = document.querySelector('#battle-screen .battle-field');
-  if (!field) return;
-  const cls = level === 'brutal' ? 'shake-brutal' : level === 'heavy' ? 'shake-heavy' : 'shake-light';
-  field.classList.remove('shake-light', 'shake-heavy', 'shake-brutal');
-  void field.offsetWidth; // reflow so the animation restarts if re-triggered
-  field.classList.add(cls);
-  setTimeout(() => field.classList.remove(cls), level === 'brutal' ? 520 : level === 'heavy' ? 440 : 320);
+  if (getSettings().battleShake) {
+    const field = document.querySelector('#battle-screen .battle-field');
+    if (!field) return;
+    const cls = level === 'brutal' ? 'shake-brutal' : level === 'heavy' ? 'shake-heavy' : 'shake-light';
+    field.classList.remove('shake-light', 'shake-heavy', 'shake-brutal');
+    void field.offsetWidth;
+    field.classList.add(cls);
+    setTimeout(() => field.classList.remove(cls), level === 'brutal' ? 520 : level === 'heavy' ? 440 : 320);
+  }
 }
 
 // Stylized violence: blood splatter, slash, impact flash and a flying damage
@@ -2789,6 +2792,14 @@ function awaitPlayerAction(pTeam, pIdx, enemyActive) {
       cleanup(); resolve({ type: 'switch', idx });
     };
     document.getElementById('btn-battle-auto').onclick = () => { _battleAuto = true; cleanup(); resolve(aiPlayerAction(pTeam[pIdx], pTeam, pIdx, enemyActive)); };
+
+    // Best Move button: pick the highest-damage move this turn without enabling full auto.
+    const bestMoveBtn = document.getElementById('btn-battle-best-move');
+    if (bestMoveBtn) {
+      const best = bestMoveVs(pTeam[pIdx], enemyActive);
+      bestMoveBtn.textContent = `26a1 Best: ${best.name}`;
+      bestMoveBtn.onclick = () => { cleanup(); resolve({ type: 'attack', move: best }); };
+    }
   });
 }
 
@@ -3765,6 +3776,7 @@ function openSettingsModal() {
         </div>
         <div class="settings-section-title">Display</div>
         ${row('Dark Mode', 'darkMode')}
+        ${row('Battle Shake', 'battleShake')}
         <div class="settings-section-title">Auto-Skip</div>
         ${row('Regular Trainers', 'autoSkipBattles', s.autoSkipAllBattles)}
         ${row('All Fights', 'autoSkipAllBattles')}

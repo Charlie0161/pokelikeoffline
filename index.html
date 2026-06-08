@@ -51,6 +51,14 @@
   <button id="btn-new-run" class="btn-primary">Normal Mode</button>
   <button id="btn-hard-run" class="btn-primary" style="margin-top:6px;" title="Hardcore mode — any Pokémon that faints in battle is lost permanently. Exception: rival (Silver) battles won't permanently faint your team if you win.">Nuzlocke</button>
   <button id="btn-endless-run" class="btn-primary" style="margin-top:6px;">Battle Tower</button>
+
+  <!-- Dev Mode button — remove before sharing publicly -->
+  <button onclick="startDevRun()" class="btn-primary"
+    style="margin-top:6px;background:#7b0000;border-color:#ff3333;color:#fff;"
+    title="Developer mode — maxed team, map 7, all badges">
+    🛠️ Dev Mode
+  </button>
+
   <div style="display:flex;gap:8px;margin-top:8px;">
     <button onclick="openPokedexModal()" class="btn-secondary">📖 Pokédex</button>
     <button onclick="openAchievementsModal()" class="btn-secondary">🏆 Achievements</button>
@@ -177,6 +185,7 @@
     <div id="battle-move-buttons" class="battle-move-buttons"></div>
     <div class="battle-command-actions">
       <button id="btn-battle-switch" class="btn-primary">↔ Switch</button>
+      <button id="btn-battle-best-move" class="btn-secondary" style="border-color:#4af;color:#4af;">⚡ Best Move</button>
       <button id="btn-battle-auto" class="btn-secondary">▶ Auto</button>
     </div>
   </div>

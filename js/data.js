@@ -598,7 +598,7 @@ const TYPE_ITEM_MAP = {
 
 // Settings (persisted across runs)
 function getSettings() {
-  const defaults = { autoSkipBattles: false, autoSkipAllBattles: false, autoSkipEvolve: false, darkMode: false };
+  const defaults = { autoSkipBattles: false, autoSkipAllBattles: false, autoSkipEvolve: false, darkMode: false, battleShake: false };
   return Object.assign({}, defaults, getCached('poke_settings') || {});
 }
 function saveSettings(s) { setCached('poke_settings', s); }
@@ -1212,14 +1212,14 @@ function getSpeciesIdsByType(type, maxGenId = 151) {
 // shown as an evolution beyond its level threshold (Golem@13 → Geodude), and is
 // evolved forward when the level allows it (a Champion's filler reaches its final
 // form). This keeps the leader's type while avoiding premature evolutions.
-async function buildBossTeam(baseTeam, leaderType, maxGenId = 151, aceLevelTarget = null) {
+async function buildBossTeam(baseTeam, leaderType, maxGenId = 151, aceLevelTarget = null, padToSix = false) {
   let team = baseTeam.map(p => ({ ...p }));
   const curAce = Math.max(...team.map(p => p.level));
   if (aceLevelTarget != null && curAce > 0) {
     const delta = aceLevelTarget - curAce;
     team = team.map(p => ({ ...p, level: Math.max(1, Math.min(100, p.level + delta)) }));
   }
-  if (team.length >= 6) return team.slice(0, 6);
+  if (!padToSix || team.length >= 6) return team.slice(0, 6);
 
   const ace = Math.max(...team.map(p => p.level));
   const used = new Set(team.map(p => p.speciesId ?? p.id));

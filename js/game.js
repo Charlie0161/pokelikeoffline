@@ -183,6 +183,61 @@ async function initGame() {
   }
 }
 
+
+// ─── DEV MODE ────────────────────────────────────────────────────────────────
+// Instantly starts a run with a maxed-out team at level 100 with max moves.
+// Skips trainer/starter select entirely. Remove the button from index.html
+// before sharing the game publicly.
+async function startDevRun() {
+  runGeneration++;
+  clearEndlessState();
+  const seed = Date.now();
+  seedRng(seed);
+  clearSavedRun();
+
+  const savedTrainer = localStorage.getItem('poke_trainer') || 'boy';
+  state = {
+    currentMap: 7, // start at map 8 (Elite Four)
+    currentNode: null,
+    team: [],
+    items: [],
+    badges: 8,
+    map: null,
+    eliteIndex: 0,
+    trainer: savedTrainer,
+    starterSpeciesId: 6, // Charizard
+    maxTeamSize: 6,
+    nuzlockeMode: false,
+    gen2Mode: false,
+    bothGens: false,
+    silverBeaten: 0,
+    usedPokecenter: false,
+    pickedUpItem: false,
+    runSeed: seed,
+  };
+
+  // Dev team: Charizard, Mewtwo, Dragonite, Gengar, Alakazam, Starmie
+  const devTeamIds = [6, 150, 149, 94, 65, 121];
+  for (const id of devTeamIds) {
+    const species = await fetchPokemonById(id);
+    if (!species) continue;
+    const inst = createInstance(species, 100, false, 2); // moveTier 2 = max
+    state.team.push(inst);
+  }
+
+  // Give a useful item kit
+  const devItemIds = ['full_restore', 'full_restore', 'max_revive', 'max_revive', 'tm_normal', 'tm_normal'];
+  for (const itemId of devItemIds) {
+    const item = (typeof ALL_ITEMS !== 'undefined' ? ALL_ITEMS : [...(ITEM_POOL || []), ...(USABLE_ITEM_POOL || [])])
+      .find(i => i.id === itemId);
+    if (item && state.items.length < 6) state.items.push({ ...item });
+  }
+
+  saveRun();
+  startMap(7); // generates map + renders map screen
+}
+// ─── END DEV MODE ────────────────────────────────────────────────────────────
+
 async function startNewRun(nuzlockeMode = false, gen2Mode = false, forcedStarterId = null, bothGens = false) {
   runGeneration++;
   clearEndlessState();
@@ -916,9 +971,10 @@ async function doBattleNode(node) {
   showMapScreen();
 }
 
-// Runs a gym battle for the given leader (team padded to 6 of the leader's type).
+// Runs a gym battle for the given leader. In Nuzlocke mode the team pads to 6;
+// in Normal mode the canonical roster is used so gym leaders feel authentic.
 async function runGymBattle(node, leader, maxGenId, aceTarget) {
-  const built = await buildBossTeam(leader.team, leader.type, maxGenId, aceTarget);
+  const built = await buildBossTeam(leader.team, leader.type, maxGenId, aceTarget, state.nuzlockeMode);
   const enemyTeam = built.map(p => ({
     ...createInstance(p, p.level, false, leader.moveTier ?? 1),
     heldItem: p.heldItem || null,
@@ -958,7 +1014,7 @@ async function doElite4() {
   for (let i = state.eliteIndex; i < bosses.length; i++) {
     state.eliteIndex = i;
     const boss = bosses[i];
-    const built = await buildBossTeam(boss.team, boss.type, 151, null);
+    const built = await buildBossTeam(boss.team, boss.type, 151, null, true);
     const enemyTeam = built.map(p => createInstance(p, p.level, false, 2));
 
     showScreen('battle-screen');
@@ -987,7 +1043,7 @@ async function doBothElite4() {
     const slot = lineup[i];
     const member = (slot.gen === 2 ? GEN2_ELITE_4 : ELITE_4)[slot.idx];
     const target = Math.max(...ELITE_4[Math.min(i, ELITE_4.length - 1)].team.map(p => p.level));
-    const built = await buildBossTeam(member.team, member.type, 251, target);
+    const built = await buildBossTeam(member.team, member.type, 251, target, true);
     const enemyTeam = built.map(p => ({ ...createInstance(p, p.level, false, 2), heldItem: p.heldItem || null }));
 
     showScreen('battle-screen');
@@ -1117,7 +1173,7 @@ async function doGen2Elite4() {
         nextBoss: boss,
       });
     }
-    const built = await buildBossTeam(boss.team, boss.type, 251, null);
+    const built = await buildBossTeam(boss.team, boss.type, 251, null, true);
     const enemyTeam = built.map(p => ({ ...createInstance(p, p.level, false, 2), heldItem: p.heldItem || null }));
     showScreen('battle-screen');
     document.getElementById('battle-title').textContent = `${boss.title}: ${boss.name}!`;
