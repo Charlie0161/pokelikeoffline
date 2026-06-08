@@ -1,0 +1,226 @@
+/* ============================================================
+   mobile.css — Pokelike mobile optimisation
+   Add this file to your project and link it in index.html
+   AFTER the main style.css link:
+   <link rel="stylesheet" href="css/mobile.css">
+   ============================================================ */
+
+/* ─── Base mobile fixes ─────────────────────────────────────── */
+@media (max-width: 640px) {
+
+  /* Prevent horizontal scroll */
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* Full-width game container */
+  body > div,
+  #game,
+  .screen,
+  .container,
+  .panel {
+    width: 100vw !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  /* ─── Buttons ─────────────────────────────────────────────── */
+  /* Minimum 44px tap target (Apple HIG recommendation) */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+    font-size: 1rem !important;
+    padding: 10px 16px !important;
+    /* Removes the 300ms tap delay on mobile browsers */
+    touch-action: manipulation;
+    /* Prevent text from being tiny */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* ─── Sprites ─────────────────────────────────────────────── */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Battle sprites — constrain so they don't overflow */
+  .battle-sprite,
+  .pokemon-sprite,
+  img[src*="pokemonshowdown"],
+  img[src*="sprites/pokemon"] {
+    max-width: 96px !important;
+    max-height: 96px !important;
+    image-rendering: pixelated; /* Keep sprites crisp on mobile */
+  }
+
+  /* ─── Battle screen ───────────────────────────────────────── */
+  /* Stack your team and the enemy vertically on small screens */
+  .battle-area,
+  .battle-teams,
+  .battle-field {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  /* ─── Team slots ──────────────────────────────────────────── */
+  /* 3-column grid for your team of 6 */
+  .team,
+  .team-slots,
+  .your-team {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  /* Individual Pokémon slot cards */
+  .pokemon-slot,
+  .team-slot {
+    padding: 6px !important;
+    font-size: 0.75rem !important;
+  }
+
+  /* Pokémon name — truncate if too long */
+  .pokemon-name,
+  .mon-name {
+    font-size: 0.8rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ─── HP bars ─────────────────────────────────────────────── */
+  .hp-bar-label,
+  .hp-text {
+    font-size: 0.7rem !important;
+  }
+
+  /* ─── Map nodes ───────────────────────────────────────────── */
+  /* Make map nodes easier to tap */
+  .node,
+  .map-node,
+  [class*="node"] {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    font-size: 1.2rem !important;
+  }
+
+  /* ─── Modals & popups ─────────────────────────────────────── */
+  .modal,
+  .popup,
+  .overlay-content,
+  [class*="modal"],
+  [class*="popup"] {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    margin: auto !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+
+  /* ─── Items bar ───────────────────────────────────────────── */
+  /* Horizontal scroll for items instead of overflow clipping */
+  .items,
+  .items-list,
+  .item-bar {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    gap: 8px !important;
+    padding-bottom: 6px !important;
+    /* Hide scrollbar visually but keep it functional */
+    scrollbar-width: none;
+  }
+  .items::-webkit-scrollbar,
+  .items-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Individual item tiles */
+  .item,
+  .item-slot {
+    flex-shrink: 0 !important;
+    min-width: 60px !important;
+    min-height: 44px !important;
+    font-size: 0.75rem !important;
+    text-align: center !important;
+  }
+
+  /* ─── Typography ──────────────────────────────────────────── */
+  /* Prevent iOS from auto-zooming on inputs */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* Slightly larger base text for readability */
+  body {
+    font-size: 15px;
+  }
+
+  /* ─── Hide desktop-only hints ─────────────────────────────── */
+  /* Drag-to-reorder is fiddly on mobile — hide the hint text */
+  .drag-hint,
+  [class*="drag-hint"],
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* ─── Battle log ──────────────────────────────────────────── */
+  /* Compact the battle log on small screens */
+  .battle-log,
+  .log,
+  [class*="battle-log"] {
+    max-height: 80px !important;
+    overflow-y: auto !important;
+    font-size: 0.75rem !important;
+  }
+
+  /* ─── Header / title bar ──────────────────────────────────── */
+  h1, .game-title {
+    font-size: 1.4rem !important;
+  }
+
+  h2, .screen-title {
+    font-size: 1.1rem !important;
+  }
+
+  /* ─── Badge display ───────────────────────────────────────── */
+  .badges,
+  .badge-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  .badge,
+  .badge-icon {
+    width: 28px !important;
+    height: 28px !important;
+  }
+}
+
+/* ─── Very small screens (iPhone SE, older Androids) ────────── */
+@media (max-width: 375px) {
+  button {
+    font-size: 0.9rem !important;
+    padding: 8px 12px !important;
+  }
+
+  .pokemon-slot,
+  .team-slot {
+    padding: 4px !important;
+    font-size: 0.65rem !important;
+  }
+
+  .battle-sprite,
+  .pokemon-sprite {
+    max-width: 72px !important;
+    max-height: 72px !important;
+  }
+}

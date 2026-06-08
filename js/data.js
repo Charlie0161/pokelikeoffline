@@ -844,8 +844,8 @@ async function fetchPokemonById(idOrSlug) {
       baseStats,
       bst,
       // Use API sprite URL directly — it's correct for both base forms and variants
-      spriteUrl: d.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${d.id}.png`,
-      shinySpriteUrl: d.sprites.front_shiny || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${d.id}.png`,
+      spriteUrl: d.sprites.front_default || `sprites/pokemon/${d.id}.png`,
+      shinySpriteUrl: d.sprites.front_shiny || `sprites/pokemon/${d.id}.png`,
     };
     setCached(key, poke);
     return poke;
@@ -1167,8 +1167,8 @@ function createInstance(species, level, isShiny = false, moveTier = 1) {
     : species.baseStats;
   const maxHp = calcHp(baseStats.hp, lvl);
   const spriteUrl = isShiny
-    ? (species.shinySpriteUrl || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${id}.png`)
-    : (species.spriteUrl      || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`);
+    ? (species.shinySpriteUrl || `sprites/pokemon/${id}.png`)
+    : (species.spriteUrl      || `sprites/pokemon/${id}.png`);
   return {
     speciesId: id,
     name: species.name,
@@ -1804,7 +1804,7 @@ const ACHIEVEMENTS = [
 function achievementIconHtml(a) {
   const m = a && a.img && /^(pkmn|shiny|item|badge):(.+)$/.exec(a.img);
   if (!m) return a ? a.icon : '';
-  const pokeApi = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/';
+  const pokeApi = 'sprites/pokemon/';
   // Badges are served locally — the upstream sprites have a light-gray outer
   // ring that reads as a halo on dark surfaces (see scripts/clean-badges.py).
   const path = m[1] === 'pkmn'  ? `${pokeApi}pokemon/${m[2]}.png`
@@ -1910,7 +1910,7 @@ function incrementEliteWins() {
 // Items can override the URL with `iconUrl` for sprites not hosted on PokeAPI.
 function itemIconHtml(item, size = 24) {
   const slug = item.id.replace(/_/g, '-');
-  const url = item.iconUrl || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${slug}.png`;
+  const url = item.iconUrl || `sprites/pokemon/${slug}.png`;
   const esc = item.icon.replace(/'/g, "\\'");
   return `<img src="${url}" alt="${item.name}" title="${item.name}" class="item-sprite-icon" `
        + `style="width:${size}px;height:${size}px;image-rendering:pixelated;vertical-align:middle;" `
