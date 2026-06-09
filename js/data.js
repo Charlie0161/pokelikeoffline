@@ -589,8 +589,15 @@ const TYPE_ITEM_MAP = {
     for (const key of Object.keys(localStorage)) {
       if (!key.startsWith('pkrl_poke_')) continue;
       const val = getCached(key);
-      if (val && val.baseStats && (val.baseStats.special === undefined || val.baseStats.spdef === undefined)) {
-        localStorage.removeItem(key);
+      if (!val) continue;
+      // Remove entries missing required stats
+      if (val.baseStats && (val.baseStats.special === undefined || val.baseStats.spdef === undefined)) {
+        localStorage.removeItem(key); continue;
+      }
+      // Remove entries with stale local sprite URLs (sprites/pokemon/N.png)
+      // so they get re-fetched with proper CDN URLs
+      if (val.spriteUrl && val.spriteUrl.startsWith('sprites/pokemon/')) {
+        localStorage.removeItem(key); continue;
       }
     }
   } catch {}
@@ -843,9 +850,9 @@ async function fetchPokemonById(idOrSlug) {
       types,
       baseStats,
       bst,
-      // Use PokeAPI CDN as primary sprite source; local sprite as fallback.
-      spriteUrl: d.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${d.id}.png`,
-      shinySpriteUrl: d.sprites.front_shiny || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${d.id}.png`,
+      // Use API sprite URL directly — it's correct for both base forms and variants
+      spriteUrl: d.sprites.front_default || `sprites/pokemon/${d.id}.png`,
+      shinySpriteUrl: d.sprites.front_shiny || `sprites/pokemon/${d.id}.png`,
     };
     setCached(key, poke);
     return poke;
@@ -1167,8 +1174,8 @@ function createInstance(species, level, isShiny = false, moveTier = 1) {
     : species.baseStats;
   const maxHp = calcHp(baseStats.hp, lvl);
   const spriteUrl = isShiny
-    ? (species.shinySpriteUrl || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${id}.png`)
-    : (species.spriteUrl      || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`);
+    ? (species.shinySpriteUrl || `sprites/pokemon/${id}.png`)
+    : (species.spriteUrl      || `sprites/pokemon/${id}.png`);
   return {
     speciesId: id,
     name: species.name,
