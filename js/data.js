@@ -258,23 +258,23 @@ const GYM_LEADERS = [
   {
     name: 'Lt. Surge', badge: 'Thunder Badge', type: 'Electric', moveTier: 1,
     team: [
-      { speciesId: 25,  name: 'Pikachu',  types: ['Electric'], baseStats: { hp:35,atk:55,def:40,speed:90,special:50 },  level: 20, heldItem: { id: 'eviolite', name: 'Eviolite', icon: '💎' } },
-      { speciesId: 100, name: 'Voltorb',  types: ['Electric'], baseStats: { hp:40,atk:30,def:50,speed:100,special:55 }, level: 23, heldItem: { id: 'magnet',   name: 'Magnet',   icon: '🧲' } },
-      { speciesId: 26,  name: 'Raichu',   types: ['Electric'], baseStats: { hp:60,atk:90,def:55,speed:110,special:90 }, level: 25, heldItem: { id: 'life_orb', name: 'Life Orb', icon: '🔮' } },
+      { speciesId: 25,  name: 'Pikachu',  types: ['Electric'], baseStats: { hp:35,atk:55,def:40,speed:90,special:50 },  level: 20, heldItem: { id: 'eviolite', name: 'Eviolite', icon: '💎' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/eviolite.png'} },
+      { speciesId: 100, name: 'Voltorb',  types: ['Electric'], baseStats: { hp:40,atk:30,def:50,speed:100,special:55 }, level: 23, heldItem: { id: 'magnet',   name: 'Magnet',   icon: '🧲' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/magnet.png'} },
+      { speciesId: 26,  name: 'Raichu',   types: ['Electric'], baseStats: { hp:60,atk:90,def:55,speed:110,special:90 }, level: 25, heldItem: { id: 'life_orb', name: 'Life Orb', icon: '🔮' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/life-orb.png'} },
     ]
   },
   {
     name: 'Erika', badge: 'Rainbow Badge', type: 'Grass', moveTier: 1,
     team: [
-      { speciesId: 114, name: 'Tangela',     types: ['Grass'], baseStats: { hp:65,atk:55,def:115,speed:60,special:100 }, level: 26, heldItem: { id: 'leftovers',     name: 'Leftovers',    icon: '🍃' } },
-      { speciesId: 71,  name: 'Victreebel',  types: ['Grass','Poison'], baseStats: { hp:80,atk:105,def:65,speed:70,special:100 }, level: 31, heldItem: { id: 'poison_barb',   name: 'Poison Barb',  icon: '☠️' } },
-      { speciesId: 45,  name: 'Vileplume',   types: ['Grass','Poison'], baseStats: { hp:75,atk:80,def:85,speed:50,special:110 }, level: 32, heldItem: { id: 'miracle_seed',  name: 'Miracle Seed', icon: '🌱' } },
+      { speciesId: 114, name: 'Tangela',     types: ['Grass'], baseStats: { hp:65,atk:55,def:115,speed:60,special:100 }, level: 26, heldItem: { id: 'leftovers',     name: 'Leftovers',    icon: '🍃' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/leftovers.png'} },
+      { speciesId: 71,  name: 'Victreebel',  types: ['Grass','Poison'], baseStats: { hp:80,atk:105,def:65,speed:70,special:100 }, level: 31, heldItem: { id: 'poison_barb',   name: 'Poison Barb',  icon: '☠️' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poison-barb.png'} },
+      { speciesId: 45,  name: 'Vileplume',   types: ['Grass','Poison'], baseStats: { hp:75,atk:80,def:85,speed:50,special:110 }, level: 32, heldItem: { id: 'miracle_seed',  name: 'Miracle Seed', icon: '🌱' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/miracle-seed.png'} },
     ]
   },
   {
     name: 'Koga', badge: 'Soul Badge', type: 'Poison', moveTier: 1,
     team: [
-      { speciesId: 109, name: 'Koffing',  types: ['Poison'], baseStats: { hp:40,atk:65,def:95,speed:35,special:60 },  level: 38, heldItem: { id: 'rocky_helmet', name: 'Rocky Helmet', icon: '⛑️' } },
+      { speciesId: 109, name: 'Koffing',  types: ['Poison'], baseStats: { hp:40,atk:65,def:95,speed:35,special:60 },  level: 38, heldItem: { id: 'rocky_helmet', name: 'Rocky Helmet', icon: '⛑️' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rocky-helmet.png'} },
       { speciesId: 109, name: 'Koffing',  types: ['Poison'], baseStats: { hp:40,atk:65,def:95,speed:35,special:60 },  level: 38, heldItem: { id: 'rocky_helmet', name: 'Rocky Helmet', icon: '⛑️' } },
       { speciesId: 89,  name: 'Muk',      types: ['Poison'], baseStats: { hp:105,atk:105,def:75,speed:50,special:65 }, level: 40, heldItem: { id: 'poison_barb',  name: 'Poison Barb',  icon: '☠️' } },
       { speciesId: 110, name: 'Weezing',  types: ['Poison'], baseStats: { hp:65,atk:90,def:120,speed:60,special:85 },  level: 44, heldItem: { id: 'leftovers',    name: 'Leftovers',    icon: '🍃' } },
@@ -283,16 +283,16 @@ const GYM_LEADERS = [
   {
     name: 'Sabrina', badge: 'Marsh Badge', type: 'Psychic', moveTier: 1,
     team: [
-      { speciesId: 122, name: 'Mr. Mime', types: ['Psychic'], baseStats: { hp:40,atk:45,def:65,speed:90,special:100 }, level: 40, heldItem: { id: 'twisted_spoon', name: 'Twisted Spoon', icon: '🥄' } },
-      { speciesId: 49,  name: 'Venomoth', types: ['Bug','Poison'], baseStats: { hp:70,atk:65,def:60,speed:90,special:90 }, level: 41, heldItem: { id: 'silver_powder', name: 'Silver Powder', icon: '🐛' } },
+      { speciesId: 122, name: 'Mr. Mime', types: ['Psychic'], baseStats: { hp:40,atk:45,def:65,speed:90,special:100 }, level: 40, heldItem: { id: 'twisted_spoon', name: 'Twisted Spoon', icon: '🥄' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/twisted-spoon.png'} },
+      { speciesId: 49,  name: 'Venomoth', types: ['Bug','Poison'], baseStats: { hp:70,atk:65,def:60,speed:90,special:90 }, level: 41, heldItem: { id: 'silver_powder', name: 'Silver Powder', icon: '🐛' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/silver-powder.png'} },
       { speciesId: 64,  name: 'Kadabra',  types: ['Psychic'], baseStats: { hp:40,atk:35,def:30,speed:105,special:120 }, level: 42, heldItem: { id: 'eviolite', name: 'Eviolite', icon: '💎' } },
-      { speciesId: 65,  name: 'Alakazam', types: ['Psychic'], baseStats: { hp:55,atk:50,def:45,speed:120,special:135 }, level: 44, heldItem: { id: 'scope_lens', name: 'Scope Lens', icon: '🔭' } },
+      { speciesId: 65,  name: 'Alakazam', types: ['Psychic'], baseStats: { hp:55,atk:50,def:45,speed:120,special:135 }, level: 44, heldItem: { id: 'scope_lens', name: 'Scope Lens', icon: '🔭' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/scope-lens.png'} },
     ]
   },
   {
     name: 'Blaine', badge: 'Volcano Badge', type: 'Fire', moveTier: 2,
     team: [
-      { speciesId: 77,  name: 'Ponyta',   types: ['Fire'], baseStats: { hp:50,atk:85,def:55,speed:90,special:65 }, level: 47, heldItem: { id: 'charcoal', name: 'Charcoal', icon: '🔥' } },
+      { speciesId: 77,  name: 'Ponyta',   types: ['Fire'], baseStats: { hp:50,atk:85,def:55,speed:90,special:65 }, level: 47, heldItem: { id: 'charcoal', name: 'Charcoal', icon: '🔥' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/charcoal.png'} },
       { speciesId: 58,  name: 'Growlithe',types: ['Fire'], baseStats: { hp:55,atk:70,def:45,speed:60,special:50 }, level: 47, heldItem: { id: 'eviolite', name: 'Eviolite', icon: '💎' } },
       { speciesId: 78,  name: 'Rapidash', types: ['Fire'], baseStats: { hp:65,atk:100,def:70,speed:105,special:80 }, level: 48, heldItem: { id: 'charcoal', name: 'Charcoal', icon: '🔥' } },
       { speciesId: 59,  name: 'Arcanine', types: ['Fire'], baseStats: { hp:90,atk:110,def:80,speed:95,special:100 }, level: 53, heldItem: { id: 'life_orb', name: 'Life Orb', icon: '🔮' } },
@@ -301,10 +301,10 @@ const GYM_LEADERS = [
   {
     name: 'Giovanni', badge: 'Earth Badge', type: 'Ground', moveTier: 2,
     team: [
-      { speciesId: 51,  name: 'Dugtrio',  types: ['Ground'], baseStats: { hp:35,atk:100,def:50,speed:120,special:50 }, level: 55, heldItem: { id: 'soft_sand', name: 'Soft Sand', icon: '🏖️' } },
+      { speciesId: 51,  name: 'Dugtrio',  types: ['Ground'], baseStats: { hp:35,atk:100,def:50,speed:120,special:50 }, level: 55, heldItem: { id: 'soft_sand', name: 'Soft Sand', icon: '🏖️' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/soft-sand.png'} },
       { speciesId: 31,  name: 'Nidoqueen',types: ['Poison','Ground'], baseStats: { hp:90,atk:82,def:87,speed:76,special:75 }, level: 53, heldItem: { id: 'poison_barb', name: 'Poison Barb', icon: '☠️' } },
       { speciesId: 34,  name: 'Nidoking', types: ['Poison','Ground'], baseStats: { hp:81,atk:92,def:77,speed:85,special:75 }, level: 54, heldItem: { id: 'soft_sand', name: 'Soft Sand', icon: '🏖️' } },
-      { speciesId: 111, name: 'Rhyhorn',  types: ['Ground','Rock'], baseStats: { hp:80,atk:85,def:95,speed:25,special:30 }, level: 56, heldItem: { id: 'hard_stone', name: 'Hard Stone', icon: '🪨' } },
+      { speciesId: 111, name: 'Rhyhorn',  types: ['Ground','Rock'], baseStats: { hp:80,atk:85,def:95,speed:25,special:30 }, level: 56, heldItem: { id: 'hard_stone', name: 'Hard Stone', icon: '🪨' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/hard-stone.png'} },
       { speciesId: 112, name: 'Rhydon',   types: ['Ground','Rock'], baseStats: { hp:105,atk:130,def:120,speed:40,special:45 }, level: 60, heldItem: { id: 'rocky_helmet', name: 'Rocky Helmet', icon: '⛑️' } },
     ]
   },
@@ -314,30 +314,30 @@ const ELITE_4 = [
   {
     name: 'Lorelei', title: 'Elite Four', type: 'Ice',
     team: [
-      { speciesId: 87,  name: 'Dewgong',   types: ['Water','Ice'], baseStats: { hp:90,atk:70,def:80,speed:70,special:95 }, level: 54, heldItem: { id: 'mystic_water', name: 'Mystic Water', icon: '💧' } },
+      { speciesId: 87,  name: 'Dewgong',   types: ['Water','Ice'], baseStats: { hp:90,atk:70,def:80,speed:70,special:95 }, level: 54, heldItem: { id: 'mystic_water', name: 'Mystic Water', icon: '💧' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/mystic-water.png'} },
       { speciesId: 91,  name: 'Cloyster',  types: ['Water','Ice'], baseStats: { hp:50,atk:95,def:180,speed:70,special:85 }, level: 53, heldItem: { id: 'rocky_helmet', name: 'Rocky Helmet', icon: '⛑️' } },
       { speciesId: 80,  name: 'Slowbro',   types: ['Water','Psychic'], baseStats: { hp:95,atk:75,def:110,speed:30,special:100 }, level: 54, heldItem: { id: 'leftovers', name: 'Leftovers', icon: '🍃' } },
       { speciesId: 124, name: 'Jynx',      types: ['Ice','Psychic'], baseStats: { hp:65,atk:50,def:35,speed:95,special:95 }, level: 56, heldItem: { id: 'twisted_spoon', name: 'Twisted Spoon', icon: '🥄' } },
-      { speciesId: 131, name: 'Lapras',    types: ['Water','Ice'], baseStats: { hp:130,atk:85,def:80,speed:60,special:95 }, level: 56, heldItem: { id: 'shell_bell', name: 'Shell Bell', icon: '🐚' } },
+      { speciesId: 131, name: 'Lapras',    types: ['Water','Ice'], baseStats: { hp:130,atk:85,def:80,speed:60,special:95 }, level: 56, heldItem: { id: 'shell_bell', name: 'Shell Bell', icon: '🐚' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/shell-bell.png'} },
     ]
   },
   {
     name: 'Bruno', title: 'Elite Four', type: 'Fighting',
     team: [
       { speciesId: 95,  name: 'Onix',      types: ['Rock','Ground'], baseStats: { hp:35,atk:45,def:160,speed:70,special:30 }, level: 53, heldItem: { id: 'rocky_helmet', name: 'Rocky Helmet', icon: '⛑️' } },
-      { speciesId: 107, name: 'Hitmonchan',types: ['Fighting'], baseStats: { hp:50,atk:105,def:79,speed:76,special:35 }, level: 55, heldItem: { id: 'black_belt', name: 'Black Belt', icon: '🥋' } },
+      { speciesId: 107, name: 'Hitmonchan',types: ['Fighting'], baseStats: { hp:50,atk:105,def:79,speed:76,special:35 }, level: 55, heldItem: { id: 'black_belt', name: 'Black Belt', icon: '🥋' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/black-belt.png'} },
       { speciesId: 106, name: 'Hitmonlee', types: ['Fighting'], baseStats: { hp:50,atk:120,def:53,speed:87,special:35 }, level: 55, heldItem: { id: 'life_orb', name: 'Life Orb', icon: '🔮' } },
       { speciesId: 95,  name: 'Onix',      types: ['Rock','Ground'], baseStats: { hp:35,atk:45,def:160,speed:70,special:30 }, level: 54, heldItem: { id: 'hard_stone', name: 'Hard Stone', icon: '🪨' } },
-      { speciesId: 68,  name: 'Machamp',   types: ['Fighting'], baseStats: { hp:90,atk:130,def:80,speed:55,special:65 }, level: 58, heldItem: { id: 'choice_band', name: 'Choice Band', icon: '🎀' } },
+      { speciesId: 68,  name: 'Machamp',   types: ['Fighting'], baseStats: { hp:90,atk:130,def:80,speed:55,special:65 }, level: 58, heldItem: { id: 'choice_band', name: 'Choice Band', icon: '🎀' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/choice-band.png'} },
     ]
   },
   {
     name: 'Agatha', title: 'Elite Four', type: 'Ghost',
     team: [
-      { speciesId: 94,  name: 'Gengar',    types: ['Ghost','Poison'], baseStats: { hp:60,atk:65,def:60,speed:110,special:130 }, level: 54, heldItem: { id: 'spell_tag', name: 'Spell Tag', icon: '👻' } },
+      { speciesId: 94,  name: 'Gengar',    types: ['Ghost','Poison'], baseStats: { hp:60,atk:65,def:60,speed:110,special:130 }, level: 54, heldItem: { id: 'spell_tag', name: 'Spell Tag', icon: '👻' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/spell-tag.png'} },
       { speciesId: 42,  name: 'Golbat',    types: ['Poison','Flying'], baseStats: { hp:75,atk:80,def:70,speed:90,special:75 }, level: 54, heldItem: { id: 'poison_barb', name: 'Poison Barb', icon: '☠️' } },
       { speciesId: 93,  name: 'Haunter',   types: ['Ghost','Poison'], baseStats: { hp:45,atk:50,def:45,speed:95,special:115 }, level: 56, heldItem: { id: 'life_orb', name: 'Life Orb', icon: '🔮' } },
-      { speciesId: 42,  name: 'Golbat',    types: ['Poison','Flying'], baseStats: { hp:75,atk:80,def:70,speed:90,special:75 }, level: 56, heldItem: { id: 'sharp_beak', name: 'Sharp Beak', icon: '🦅' } },
+      { speciesId: 42,  name: 'Golbat',    types: ['Poison','Flying'], baseStats: { hp:75,atk:80,def:70,speed:90,special:75 }, level: 56, heldItem: { id: 'sharp_beak', name: 'Sharp Beak', icon: '🦅' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sharp-beak.png'} },
       { speciesId: 94,  name: 'Gengar',    types: ['Ghost','Poison'], baseStats: { hp:60,atk:65,def:60,speed:110,special:130 }, level: 58, heldItem: { id: 'scope_lens', name: 'Scope Lens', icon: '🔭' } },
     ]
   },
@@ -345,7 +345,7 @@ const ELITE_4 = [
     name: 'Lance', title: 'Elite Four', type: 'Dragon',
     team: [
       { speciesId: 130, name: 'Gyarados',  types: ['Water','Flying'], baseStats: { hp:95,atk:125,def:79,speed:81,special:100 }, level: 56, heldItem: { id: 'mystic_water', name: 'Mystic Water', icon: '💧' } },
-      { speciesId: 149, name: 'Dragonite', types: ['Dragon','Flying'], baseStats: { hp:91,atk:134,def:95,speed:80,special:100 }, level: 56, heldItem: { id: 'dragon_fang', name: 'Dragon Fang', icon: '🐉' } },
+      { speciesId: 149, name: 'Dragonite', types: ['Dragon','Flying'], baseStats: { hp:91,atk:134,def:95,speed:80,special:100 }, level: 56, heldItem: { id: 'dragon_fang', name: 'Dragon Fang', icon: '🐉' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/dragon-fang.png'} },
       { speciesId: 148, name: 'Dragonair', types: ['Dragon'], baseStats: { hp:61,atk:84,def:65,speed:70,special:70 }, level: 58, heldItem: { id: 'eviolite', name: 'Eviolite', icon: '💎' } },
       { speciesId: 148, name: 'Dragonair', types: ['Dragon'], baseStats: { hp:61,atk:84,def:65,speed:70,special:70 }, level: 60, heldItem: { id: 'dragon_fang', name: 'Dragon Fang', icon: '🐉' } },
       { speciesId: 149, name: 'Dragonite', types: ['Dragon','Flying'], baseStats: { hp:91,atk:134,def:95,speed:80,special:100 }, level: 62, heldItem: { id: 'choice_band', name: 'Choice Band', icon: '🎀' } },
@@ -524,11 +524,11 @@ const SILVER_STARTER_LINES = {
 
 // Item pool
 const ITEM_POOL = [
-  { id: 'lucky_egg',          name: 'Lucky Egg',          desc: '30% chance: holder gains +1 extra level after each battle',        icon: '🥚', minMap: 4 },
+  { id: 'lucky_egg',          name: 'Lucky Egg',          desc: '30% chance: holder gains +1 extra level after each battle',        icon: '🥚', minMap: 4 , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lucky-egg.png'},
   { id: 'life_orb',           name: 'Life Orb',           desc: '+30% damage; holder loses 10% max HP per hit',                       icon: '🔮' },
   { id: 'choice_band',        name: 'Choice Band',        desc: '+40% physical damage, -20% DEF',                                     icon: '🎀' },
-  { id: 'choice_specs',       name: 'Choice Specs',       desc: '+30% special damage',                                                icon: '👓' },
-  { id: 'metronome',          name: 'Metronome',          desc: 'Dual-type holder uses its OTHER type for attacks; +20% damage on all moves', icon: '🎵' },
+  { id: 'choice_specs',       name: 'Choice Specs',       desc: '+30% special damage',                                                icon: '👓' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/choice-specs.png'},
+  { id: 'metronome',          name: 'Metronome',          desc: 'Dual-type holder uses its OTHER type for attacks; +20% damage on all moves', icon: '🎵' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/metronome.png'},
   { id: 'scope_lens',         name: 'Scope Lens',         desc: '20% crit chance (+50% damage on crit)',                              icon: '🔭' },
   { id: 'rocky_helmet',       name: 'Rocky Helmet',       desc: 'Attacker takes 12% of their max HP on each hit',                     icon: '⛑️' },
   { id: 'shell_bell',         name: 'Shell Bell',         desc: 'Heal 15% of damage dealt',                                           icon: '🐚' },
@@ -546,33 +546,33 @@ const ITEM_POOL = [
   { id: 'dragon_fang',        name: 'Dragon Fang',        desc: '+50% Dragon move damage',                                            icon: '🐉', minMap: 6 },
   { id: 'poison_barb',        name: 'Poison Barb',        desc: '+50% Poison move damage',                                            icon: '☠️', minMap: 4 },
   { id: 'spell_tag',          name: 'Spell Tag',          desc: '+50% Ghost move damage',                                             icon: '👻', minMap: 4 },
-  { id: 'silk_scarf',         name: 'Silk Scarf',         desc: '+50% Normal move damage',                                            icon: '🤍' },
-  { id: 'metal_coat',         name: 'Metal Coat',         desc: '+50% Steel move damage',                                             icon: '🔩', minMap: 4 },
-  { id: 'black_glasses',      name: 'Black Glasses',      desc: '+50% Dark move damage',                                              icon: '🕶️', minMap: 4 },
-  { id: 'pixie_plate',        name: 'Pixie Plate',        desc: '+50% Fairy move damage',                                             icon: '🧚', minMap: 4 },
+  { id: 'silk_scarf',         name: 'Silk Scarf',         desc: '+50% Normal move damage',                                            icon: '🤍' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/silk-scarf.png'},
+  { id: 'metal_coat',         name: 'Metal Coat',         desc: '+50% Steel move damage',                                             icon: '🔩', minMap: 4 , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/metal-coat.png'},
+  { id: 'black_glasses',      name: 'Black Glasses',      desc: '+50% Dark move damage',                                              icon: '🕶️', minMap: 4 , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/black-glasses.png'},
+  { id: 'pixie_plate',        name: 'Pixie Plate',        desc: '+50% Fairy move damage',                                             icon: '🧚', minMap: 4 , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/pixie-plate.png'},
   // Stat items
-  { id: 'assault_vest',       name: 'Assault Vest',       desc: '+50% Sp.Def',                                                        icon: '🦺' },
-  { id: 'choice_scarf',       name: 'Choice Scarf',       desc: '+50% Speed',                                                         icon: '🧣' },
+  { id: 'assault_vest',       name: 'Assault Vest',       desc: '+50% Sp.Def',                                                        icon: '🦺' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/assault-vest.png'},
+  { id: 'choice_scarf',       name: 'Choice Scarf',       desc: '+50% Speed',                                                         icon: '🧣' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/choice-scarf.png'},
   // Battle effect items
   { id: 'leftovers',          name: 'Leftovers',          desc: 'Restore 10% max HP each round',                                      icon: '🍃' },
-  { id: 'expert_belt',        name: 'Expert Belt',        desc: '+100% damage on super effective hits',                                icon: '🥊' },
-  { id: 'focus_sash',         name: 'Focus Sash',         desc: 'If at full HP, guaranteed to survive any hit with 1 HP',             icon: '🎗️' },
-  { id: 'wide_lens',          name: 'Wide Lens',          desc: '+20% damage on all moves',                                            icon: '🔎' },
-  { id: 'quick_claw',         name: 'Quick Claw',         desc: '50% chance to attack first regardless of speed',                     icon: '🪝' },
-  { id: 'kings_rock',         name: "King's Rock",         desc: '30% chance to flinch the target on a hit',                          icon: '👑' },
-  { id: 'lagging_tail',       name: 'Lagging Tail',       desc: 'Always moves last, but +100% move damage',                            icon: '🐌' },
-  { id: 'adrenaline_orb',     name: 'Adrenaline Orb',     desc: 'When YOU land a SUPER-EFFECTIVE hit (×2+): +1 ATK / +1 Sp.Atk this battle', icon: '⚡' },
-  { id: 'red_card',           name: 'Red Card',           desc: 'Take 50% less damage from super-effective hits',                      icon: '🟥' },
-  { id: 'loaded_dice',        name: 'Loaded Dice',        desc: 'Start of each battle: 37% chance for +2 to ATK/DEF/Sp.Atk/Sp.Def/Speed, else -1', icon: '🎲', iconUrl: 'sprites/items/loaded_dice.png', gen2Only: true },
+  { id: 'expert_belt',        name: 'Expert Belt',        desc: '+100% damage on super effective hits',                                icon: '🥊' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/expert-belt.png'},
+  { id: 'focus_sash',         name: 'Focus Sash',         desc: 'If at full HP, guaranteed to survive any hit with 1 HP',             icon: '🎗️' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/focus-sash.png'},
+  { id: 'wide_lens',          name: 'Wide Lens',          desc: '+20% damage on all moves',                                            icon: '🔎' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/wide-lens.png'},
+  { id: 'quick_claw',         name: 'Quick Claw',         desc: '50% chance to attack first regardless of speed',                     icon: '🪝' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/quick-claw.png'},
+  { id: 'kings_rock',         name: "King's Rock",         desc: '30% chance to flinch the target on a hit',                          icon: '👑' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/kings-rock.png'},
+  { id: 'lagging_tail',       name: 'Lagging Tail',       desc: 'Always moves last, but +100% move damage',                            icon: '🐌' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/lagging-tail.png'},
+  { id: 'adrenaline_orb',     name: 'Adrenaline Orb',     desc: 'When YOU land a SUPER-EFFECTIVE hit (×2+): +1 ATK / +1 Sp.Atk this battle', icon: '⚡' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/adrenaline-orb.png'},
+  { id: 'red_card',           name: 'Red Card',           desc: 'Take 50% less damage from super-effective hits',                      icon: '🟥' , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/red-card.png'},
+  { id: 'loaded_dice',        name: 'Loaded Dice',        desc: 'Start of each battle: 37% chance for +2 to ATK/DEF/Sp.Atk/Sp.Def/Speed, else -1', icon: '🎲', iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/loaded-dice.png', gen2Only: true },
 ];
 
 const USABLE_ITEM_POOL = [
-  { id: 'max_revive',   name: 'Max Revive',  desc: 'Fully revives a fainted Pokémon',                          icon: '💊', usable: true },
-  { id: 'full_restore', name: 'Full Restore',desc: 'Fully restores HP of a Pokémon',                           icon: '🍶', usable: true },
-  { id: 'rare_candy',   name: 'Rare Candy',  desc: 'Gives a Pokémon +3 levels',                                icon: '🍬', usable: true },
-  { id: 'moon_stone',   name: 'Moon Stone',  desc: 'Force evolves a Pokémon regardless of level',              icon: '🌙', usable: true },
-  { id: 'tm_normal',    name: 'TM',          desc: "Upgrades a Pokémon's move tier by 1",                      icon: '💿', usable: true },
-  { id: 'escape_rope',  name: 'Escape Rope', desc: 'Survive a non-boss loss with 1 HP instead of game over',   icon: '🪢', usable: true },
+  { id: 'max_revive',   name: 'Max Revive',  desc: 'Fully revives a fainted Pokémon',                          icon: '💊', usable: true , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/max-revive.png'},
+  { id: 'full_restore', name: 'Full Restore',desc: 'Fully restores HP of a Pokémon',                           icon: '🍶', usable: true , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/full-restore.png'},
+  { id: 'rare_candy',   name: 'Rare Candy',  desc: 'Gives a Pokémon +3 levels',                                icon: '🍬', usable: true , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rare-candy.png'},
+  { id: 'moon_stone',   name: 'Moon Stone',  desc: 'Force evolves a Pokémon regardless of level',              icon: '🌙', usable: true , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/moon-stone.png'},
+  { id: 'tm_normal',    name: 'TM',          desc: "Upgrades a Pokémon's move tier by 1",                      icon: '💿', usable: true , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/tm-normal.png'},
+  { id: 'escape_rope',  name: 'Escape Rope', desc: 'Survive a non-boss loss with 1 HP instead of game over',   icon: '🪢', usable: true , iconUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/escape-rope.png'},
 ];
 
 const TYPE_ITEM_MAP = {
@@ -589,15 +589,8 @@ const TYPE_ITEM_MAP = {
     for (const key of Object.keys(localStorage)) {
       if (!key.startsWith('pkrl_poke_')) continue;
       const val = getCached(key);
-      if (!val) continue;
-      // Remove entries missing required stats
-      if (val.baseStats && (val.baseStats.special === undefined || val.baseStats.spdef === undefined)) {
-        localStorage.removeItem(key); continue;
-      }
-      // Remove entries with stale local sprite URLs (sprites/pokemon/N.png)
-      // so they get re-fetched with proper CDN URLs
-      if (val.spriteUrl && val.spriteUrl.startsWith('sprites/pokemon/')) {
-        localStorage.removeItem(key); continue;
+      if (val && val.baseStats && (val.baseStats.special === undefined || val.baseStats.spdef === undefined)) {
+        localStorage.removeItem(key);
       }
     }
   } catch {}
@@ -1916,8 +1909,14 @@ function incrementEliteWins() {
 // Returns an <img> for the item's official sprite, falling back to its emoji if the sprite 404s.
 // Items can override the URL with `iconUrl` for sprites not hosted on PokeAPI.
 function itemIconHtml(item, size = 24) {
-  const slug = item.id.replace(/_/g, '-');
-  const url = item.iconUrl || `sprites/pokemon/${slug}.png`;
+  // Every item in the pool has an explicit iconUrl pointing to the PokeAPI CDN.
+  // Fall back to the emoji if the image fails to load.
+  const url = item.iconUrl || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${item.id.replace(/_/g, '-')}.png`;
+  const esc = (item.icon || '?').replace(/'/g, "\'").replace(/"/g, '&quot;');
+  return `<img src="${url}" alt="${item.name}" title="${item.name}" class="item-sprite-icon" `
+       + `style="width:${size}px;height:${size}px;image-rendering:pixelated;vertical-align:middle;" `
+       + `onerror="this.style.display='none';this.insertAdjacentText('afterend','${esc}');">`;
+}.png`;
   const esc = item.icon.replace(/'/g, "\\'");
   return `<img src="${url}" alt="${item.name}" title="${item.name}" class="item-sprite-icon" `
        + `style="width:${size}px;height:${size}px;image-rendering:pixelated;vertical-align:middle;" `
