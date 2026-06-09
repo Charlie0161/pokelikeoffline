@@ -59,7 +59,7 @@ function weightedRandom(weights) {
 
 function generateMap(mapIndex, nuzlockeMode = false, gen2Mode = false) {
   // Layer sizes: start(1), catch/battle(2), content, boss(1)
-  const CONTENT_SIZES = [4, 5, 4, 5, 4, 5, 4, 5, 4, 5, 3]; // 11 content layers (+2 rows for difficulty)
+  const CONTENT_SIZES = [2, 3, 2, 3, 2, 3, 2]; // 7 content layers, max 3 nodes — clean, no crossings
   // Silver shows up as an optional node on these gen2 maps. Players who want
   // the bonus XP can route through him; others can take a different path.
   const hasSilverNode = gen2Mode && [1, 3, 5, 7].includes(mapIndex);
@@ -113,32 +113,41 @@ function generateMap(mapIndex, nuzlockeMode = false, gen2Mode = false) {
   const makeLayerEdges = (fromLayer, toLayer) => {
     const N = fromLayer.length;
     const M = toLayer.length;
-    if (N === 1) {
-      // Single source fans out to all targets
-      return toLayer.map(t => ({ from: fromLayer[0].id, to: t.id }));
-    }
+    // Fan out from a single source
+    if (N === 1) return toLayer.map(t => ({ from: fromLayer[0].id, to: t.id }));
+    // Funnel everything into a single target (boss layer)
+    if (M === 1) return fromLayer.map(f => ({ from: f.id, to: toLayer[0].id }));
+
+    // Crossing-free mapping: each node connects only to its proportionally
+    // mapped neighbour(s) in the next layer. Because we map left→left and
+    // right→right, lines between non-adjacent columns are impossible.
     const edges = [];
+    const seen = new Set();
+    const add = (f, t) => {
+      const key = f + '->' + t;
+      if (!seen.has(key)) { seen.add(key); edges.push({ from: f, to: t }); }
+    };
+
     for (let i = 0; i < N; i++) {
-      let left, right;
-      if (M === 1) {
-        left = right = 0;
-      } else if (M < N && i === 0) {
-        // Leftmost node on a shrinking layer → only the leftmost node below
-        left = right = 0;
-      } else if (M < N && i === N - 1) {
-        // Rightmost node on a shrinking layer → only the rightmost node below
-        left = right = M - 1;
-      } else {
-        const pos = i * (M - 1) / (N - 1);
-        left  = Math.floor(pos);
-        right = left + 1;
-        if (right >= M) { right = M - 1; left = M - 2; }
-      }
-      edges.push({ from: fromLayer[i].id, to: toLayer[left].id });
-      if (left !== right) {
-        edges.push({ from: fromLayer[i].id, to: toLayer[right].id });
+      // Map i (0..N-1) to the equivalent fractional position in 0..M-1
+      const frac = (N === 1) ? 0 : i / (N - 1);
+      const mapped = frac * (M - 1);
+      const lo = Math.floor(mapped);
+      const hi = Math.min(lo + 1, M - 1);
+      add(fromLayer[i].id, toLayer[lo].id);
+      if (hi !== lo) add(fromLayer[i].id, toLayer[hi].id);
+    }
+
+    // Guarantee every target node has at least one incoming edge
+    for (let j = 0; j < M; j++) {
+      const hasIncoming = edges.some(e => e.to === toLayer[j].id);
+      if (!hasIncoming) {
+        // Connect to the closest source node
+        const closest = Math.round(j * (N - 1) / (M - 1));
+        add(fromLayer[Math.min(closest, N - 1)].id, toLayer[j].id);
       }
     }
+
     return edges;
   };
 

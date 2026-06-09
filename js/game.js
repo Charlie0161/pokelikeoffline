@@ -171,7 +171,6 @@ async function initGame() {
     continueBtn.style.display = '';
     continueBtn.onclick = async () => {
       if (!loadRun()) return;
-      if (state.pendingRetry) { showLevelRetryScreen(); return; }
       if (state.currentNode && !state.currentNode.visited) {
         await onNodeClick(state.currentNode);
       } else {
@@ -558,15 +557,7 @@ function startMap(mapIndex) {
     }
   }
 
-  // Snapshot the player's state at the start of this level so a wipe can retry
-  // the level (Normal mode) instead of ending the run. Re-taken every time a
-  // level starts, so successive retries always restore this exact state.
-  state.mapStartSnapshot = JSON.parse(JSON.stringify({
-    team: state.team,
-    items: state.items,
-    maxTeamSize: state.maxTeamSize,
-  }));
-  state.pendingRetry = false;
+  // No retry snapshot needed — game over goes straight to doGameOver.
 
   const startNode = state.map.nodes['n0_0'];
   state.currentNode = startNode;
@@ -2740,12 +2731,7 @@ function showBadgeScreen(leader) {
 }
 
 async function showGameOver() {
-  // Normal mode: a wipe lets you retry the current level (with a freshly
-  // generated map) instead of losing the whole run. Nuzlocke keeps its
-  // permadeath, and Battle Tower keeps its own flow → real game over.
-  if (!state.nuzlockeMode && !state.isEndlessMode && state.mapStartSnapshot) {
-    return showLevelRetryScreen();
-  }
+  // All modes go straight to game over — no retry mechanic.
   return doGameOver();
 }
 
@@ -2758,54 +2744,6 @@ async function doGameOver() {
   initGame();
 }
 
-// Restart the current level from the state the player had when it began, with a
-// brand-new map layout. The run is NOT lost. Unlimited retries.
-function retryCurrentMap() {
-  const snap = state.mapStartSnapshot;
-  if (!snap) return doGameOver(); // safety fallback
-  state.team = JSON.parse(JSON.stringify(snap.team));
-  state.items = JSON.parse(JSON.stringify(snap.items));
-  state.maxTeamSize = snap.maxTeamSize;
-  state.pendingRetry = false;
-  // Restart the map from scratch — on the Elite Four (map 8) this means the
-  // whole gauntlet, not just the boss you fell on (eliteIndex tracks progress).
-  state.eliteIndex = 0;
-  // New seed → a different map layout (deterministic on reload via saveRun).
-  const newSeed = (Date.now() ^ (Math.random() * 0x100000000 | 0)) >>> 0;
-  seedRng(newSeed);
-  state.runSeed = newSeed;
-  startMap(state.currentMap); // regenerates map + re-heals + re-snapshots
-}
-
-// Reuses the existing (otherwise unused) #gameover-screen as a "retry the
-// level" prompt. Keeps the saved run intact so a refresh resumes here.
-function showLevelRetryScreen() {
-  const titleEl = document.querySelector('#gameover-screen .gameover-title');
-  if (titleEl) titleEl.textContent = 'You blacked out!';
-
-  const badgesEl = document.getElementById('gameover-badges');
-  if (badgesEl) badgesEl.textContent = `Badges: ${state.badges} — Level ${state.currentMap + 1}`;
-
-  const teamEl = document.getElementById('gameover-team');
-  if (teamEl) {
-    teamEl.innerHTML = state.team.map(p => {
-      const itemHtml = p.heldItem
-        ? `<div style="display:flex;align-items:center;gap:4px;font-size:8px;color:var(--text-dim);margin-top:4px;">${itemIconHtml(p.heldItem, 14)}<span>${p.heldItem.name}</span></div>`
-        : '';
-      return `<div style="display:flex;flex-direction:column;align-items:center;">${renderPokemonCard(p, false, false)}${itemHtml}</div>`;
-    }).join('');
-  }
-
-  const retryBtn = document.getElementById('btn-retry');
-  if (retryBtn) {
-    retryBtn.textContent = 'Retry Level';
-    retryBtn.onclick = retryCurrentMap;
-  }
-
-  state.pendingRetry = true;
-  saveRun();
-  showScreen('gameover-screen');
-}
 
 function showWinScreen() {
   showScreen('win-screen');

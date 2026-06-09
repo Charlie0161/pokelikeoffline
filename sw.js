@@ -2,7 +2,7 @@
 // CACHE_NAME is injected by generate-sw.js at deploy time.
 // Never edit this file directly — edit generate-sw.js instead.
 
-const CACHE_NAME = 'pokelike-BUILD_TIMESTAMP';
+const CACHE_NAME = 'pokelike-20260609-1429';
 
 // Core game files to cache immediately on first load
 const STATIC_ASSETS = [
