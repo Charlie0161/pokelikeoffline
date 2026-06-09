@@ -1910,11 +1910,14 @@ function incrementEliteWins() {
 // Items can override the URL with `iconUrl` for sprites not hosted on PokeAPI.
 function itemIconHtml(item, size = 24) {
   const slug = item.id.replace(/_/g, '-');
-  const url = item.iconUrl || `sprites/pokemon/${slug}.png`;
-  const esc = item.icon.replace(/'/g, "\\'");
+  // Go straight to PokeAPI CDN for official item sprites.
+  // Falls back to the emoji only if the image fails to load.
+  const url = item.iconUrl
+    || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${slug}.png`;
+  const esc = (item.icon || '?').replace(/'/g, "\'").replace(/"/g, '&quot;');
   return `<img src="${url}" alt="${item.name}" title="${item.name}" class="item-sprite-icon" `
        + `style="width:${size}px;height:${size}px;image-rendering:pixelated;vertical-align:middle;" `
-       + `onerror="this.replaceWith(document.createTextNode('${esc}'))">`;
+       + `onerror="this.style.display='none';this.insertAdjacentText('afterend','${esc}');">`;
 }
 
 function isShinyGenDexComplete(minId, maxId) {
