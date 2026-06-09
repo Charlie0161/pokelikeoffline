@@ -843,9 +843,9 @@ async function fetchPokemonById(idOrSlug) {
       types,
       baseStats,
       bst,
-      // Use API sprite URL directly — it's correct for both base forms and variants
-      spriteUrl: d.sprites.front_default || `sprites/pokemon/${d.id}.png`,
-      shinySpriteUrl: d.sprites.front_shiny || `sprites/pokemon/${d.id}.png`,
+      // Use PokeAPI CDN as primary sprite source; local sprite as fallback.
+      spriteUrl: d.sprites.front_default || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${d.id}.png`,
+      shinySpriteUrl: d.sprites.front_shiny || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${d.id}.png`,
     };
     setCached(key, poke);
     return poke;
@@ -1167,8 +1167,8 @@ function createInstance(species, level, isShiny = false, moveTier = 1) {
     : species.baseStats;
   const maxHp = calcHp(baseStats.hp, lvl);
   const spriteUrl = isShiny
-    ? (species.shinySpriteUrl || `sprites/pokemon/${id}.png`)
-    : (species.spriteUrl      || `sprites/pokemon/${id}.png`);
+    ? (species.shinySpriteUrl || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${id}.png`)
+    : (species.spriteUrl      || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`);
   return {
     speciesId: id,
     name: species.name,
@@ -1910,14 +1910,11 @@ function incrementEliteWins() {
 // Items can override the URL with `iconUrl` for sprites not hosted on PokeAPI.
 function itemIconHtml(item, size = 24) {
   const slug = item.id.replace(/_/g, '-');
-  // Go straight to PokeAPI CDN for official item sprites.
-  // Falls back to the emoji only if the image fails to load.
-  const url = item.iconUrl
-    || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${slug}.png`;
-  const esc = (item.icon || '?').replace(/'/g, "\'").replace(/"/g, '&quot;');
+  const url = item.iconUrl || `sprites/pokemon/${slug}.png`;
+  const esc = item.icon.replace(/'/g, "\\'");
   return `<img src="${url}" alt="${item.name}" title="${item.name}" class="item-sprite-icon" `
        + `style="width:${size}px;height:${size}px;image-rendering:pixelated;vertical-align:middle;" `
-       + `onerror="this.style.display='none';this.insertAdjacentText('afterend','${esc}');">`;
+       + `onerror="this.replaceWith(document.createTextNode('${esc}'))">`;
 }
 
 function isShinyGenDexComplete(minId, maxId) {

@@ -423,7 +423,7 @@ function renderBattleField(pTeam, eTeam) {
         <div class="battle-poke-name">${p.nickname||p.name} Lv${p.level}</div>
         <div class="poke-hp">${hpBlock}</div>
         <img src="ui/battleBase.png" class="battle-base" alt="">
-        <img src="${p.spriteUrl||''}" alt="${p.name}" class="battle-sprite" onerror="this.src=''">
+        <img src="${p.spriteUrl||''}" alt="${p.name}" class="battle-sprite" onerror="if(!this.dataset.retry){this.dataset.retry='1';this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.speciesId||p.id}.png';}else{this.style.opacity='0';}">
         <div class="battle-stages"></div>
       </div>`;
     }).join('');
@@ -436,7 +436,7 @@ function renderBattleField(pTeam, eTeam) {
         <div class="battle-poke-name">${p.name} Lv${p.level}</div>
         <div class="poke-hp">${renderHpBar(p.currentHp, p.maxHp)}</div>
         <img src="ui/battleBase.png" class="battle-base" alt="">
-        <img src="${p.spriteUrl||''}" alt="${p.name}" class="battle-sprite" onerror="this.src=''">
+        <img src="${p.spriteUrl||''}" alt="${p.name}" class="battle-sprite" onerror="if(!this.dataset.retry){this.dataset.retry='1';this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.speciesId||p.id}.png';}else{this.style.opacity='0';}">
         <div class="battle-stages"></div>
       </div>`;
     }).join('');
@@ -2704,16 +2704,13 @@ async function animateInteractiveEvents(events, pTeam, eTeam, hpTrack) {
   for (const ev of events) {
     if (ev.type === 'send_out') {
       const sideId = ev.side === 'player' ? 'player-side' : 'enemy-side';
-      document.querySelectorAll(`#${sideId} .battle-pokemon`).forEach(el => {
-        el.classList.remove('active-pokemon');
-        el.querySelector('.battle-sprite')?.classList.remove('entering');
-      });
+      document.querySelectorAll(`#${sideId} .battle-pokemon`).forEach(el => el.classList.remove('active-pokemon'));
       const el = elFor(ev.side, ev.idx);
       if (el) {
         el.classList.remove('fainted');
         el.classList.add('active-pokemon');
         const spr = el.querySelector('.battle-sprite');
-        if (spr) { void spr.offsetWidth; spr.classList.add('entering'); const _enterDur = Math.max(80, Math.round(520 / battleSpeedMultiplier)); setTimeout(() => spr.classList.remove('entering'), _enterDur); }
+        if (spr) { spr.classList.remove('entering'); void spr.offsetWidth; spr.classList.add('entering'); setTimeout(() => spr.classList.remove('entering'), 520); }
       }
       await sleep(360);
 
@@ -3114,22 +3111,18 @@ async function animateBattleVisually(detailedLog, pTeamInit, eTeamInit) {
 
     } else if (event.type === 'send_out') {
       const sideId = event.side === 'player' ? 'player-side' : 'enemy-side';
-      // Clear active highlight and any stale 'entering' state on ALL slots first
-      document.querySelectorAll(`#${sideId} .battle-pokemon`).forEach(el => {
-        el.classList.remove('active-pokemon');
-        el.querySelector('.battle-sprite')?.classList.remove('entering');
-      });
+      // Clear previous active highlight on this side
+      document.querySelectorAll(`#${sideId} .battle-pokemon`).forEach(el => el.classList.remove('active-pokemon'));
       const el = document.querySelector(`#${sideId} .battle-pokemon[data-idx="${event.idx}"]`);
       if (el) {
-        el.classList.remove('fainted'); // un-faint if revived (e.g. Flying trait)
         el.classList.add('active-pokemon');
         // Materialize entrance on the sprite.
         const spr = el.querySelector('.battle-sprite');
         if (spr) {
+          spr.classList.remove('entering');
           void spr.offsetWidth; // restart the animation on re-entry
           spr.classList.add('entering');
-          const _enterDur2 = Math.max(80, Math.round(520 / battleSpeedMultiplier));
-          setTimeout(() => spr.classList.remove('entering'), _enterDur2);
+          setTimeout(() => spr.classList.remove('entering'), 520);
         }
       }
       addLogEntry(`${event.name} was sent out!`, event.side === 'player' ? 'log-player' : 'log-enemy');
