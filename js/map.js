@@ -113,81 +113,43 @@ function generateMap(mapIndex, nuzlockeMode = false, gen2Mode = false) {
   const makeLayerEdges = (fromLayer, toLayer) => {
     const N = fromLayer.length;
     const M = toLayer.length;
-
-    // Single source fans out to all targets (START node)
-    if (N === 1) return toLayer.map(t => ({ from: fromLayer[0].id, to: t.id }));
-    // Everything funnels into single target (BOSS node)
-    if (M === 1) return fromLayer.map(f => ({ from: f.id, to: toLayer[0].id }));
-
-    // ── Strict crossing-free edges ──────────────────────────────────
-    // A set of edges is crossing-free if and only if the mapping is
-    // monotone: if source i < source i', all targets of i must be ≤
-    // all targets of i'. We achieve this by only connecting each node
-    // to its proportional neighbour(s), never skipping over a column.
-    //
-    // With our layer sizes of 2 and 3 the only cases are:
-    //   2→2: straight down (0→0, 1→1)
-    //   2→3: fan out  (0→0,1  1→1,2)
-    //   3→2: funnel   (0→0,   1→0 or 1,  2→1)
-    //   3→3: straight down
-
     const edges = [];
     const seen  = new Set();
     const add   = (f, t) => {
-      const key = `${f}->${t}`;
-      if (!seen.has(key)) { seen.add(key); edges.push({ from: f, to: t }); }
+      const key = `${fromLayer[f].id}->${toLayer[t].id}`;
+      if (!seen.has(key)) { seen.add(key); edges.push({ from: fromLayer[f].id, to: toLayer[t].id }); }
     };
 
-    if (N === M) {
-      // Same size — straight down, one-to-one
-      for (let i = 0; i < N; i++) add(fromLayer[i].id, toLayer[i].id);
-
-    } else if (M > N) {
-      // Expanding (e.g. 2→3): left node fans left, right node fans right,
-      // middle target(s) get shared. Never skip a column.
-      // Each source i connects to targets [i * step, i * step + 1]
-      // where step = (M-1)/(N-1). Because step is always an integer
-      // for our sizes (step=2 for 2→3, step=1 for 3→4 etc.)
-      // this is guaranteed crossing-free.
-      const step = (M - 1) / (N - 1); // exact integer for our sizes
-      for (let i = 0; i < N; i++) {
-        const base = Math.round(i * step);
-        add(fromLayer[i].id, toLayer[base].id);
-        // Also connect to the next target so every target has an in-edge
-        if (base + 1 < M) add(fromLayer[i].id, toLayer[base + 1].id);
-      }
-
+    if (N === 1) {
+      // START fans out to all targets
+      for (let t = 0; t < M; t++) add(0, t);
+    } else if (M === 1) {
+      // Everything funnels into BOSS
+      for (let f = 0; f < N; f++) add(f, 0);
+    } else if (N === M) {
+      // Same size — straight down, no diagonals
+      for (let i = 0; i < N; i++) add(i, i);
+    } else if (N === 2 && M === 3) {
+      // Expanding 2→3: left branches left+mid, right branches mid+right
+      // Visually: two paths fan into three — no crossing possible
+      add(0, 0); add(0, 1);
+      add(1, 1); add(1, 2);
+    } else if (N === 3 && M === 2) {
+      // Shrinking 3→2: outer nodes go straight, middle branches both ways
+      // Visually: three paths funnel into two — middle is the Y split
+      add(0, 0);
+      add(1, 0); add(1, 1);
+      add(2, 1);
     } else {
-      // Shrinking (e.g. 3→2): leftmost→leftmost, rightmost→rightmost,
-      // middle node(s) connect to whichever adjacent target keeps the
-      // map balanced. Use rng() so paths vary each run.
-      add(fromLayer[0].id,     toLayer[0].id);
-      add(fromLayer[N - 1].id, toLayer[M - 1].id);
-      // Middle nodes: connect to floor or ceil of their proportional target
-      for (let i = 1; i < N - 1; i++) {
-        const frac   = i / (N - 1);
-        const mapped = frac * (M - 1);
-        // Use rng() to decide left or right so paths vary, but always
-        // pick the proportionally nearest target to stay crossing-free.
-        const target = (rng() < (mapped - Math.floor(mapped)) + 0.5)
-          ? Math.min(Math.ceil(mapped),  M - 1)
-          : Math.max(Math.floor(mapped), 0);
-        add(fromLayer[i].id, toLayer[target].id);
-      }
-    }
-
-    // Safety: guarantee every target has at least one incoming edge.
-    // This can only happen on the shrinking path if middle nodes all
-    // went the same direction — fix by connecting the nearest source.
-    for (let j = 0; j < M; j++) {
-      if (!edges.some(e => e.to === toLayer[j].id)) {
-        const src = Math.round(j * (N - 1) / (M - 1));
-        add(fromLayer[Math.min(src, N - 1)].id, toLayer[j].id);
+      // Fallback for any unexpected sizes: proportional mapping, no skipping
+      for (let i = 0; i < N; i++) {
+        const t = Math.round(i * (M - 1) / (N - 1));
+        add(i, Math.min(t, M - 1));
       }
     }
 
     return edges;
-  };
+  };;
 
   // ── Build layers ─────────────────────────────────────────────────
 
