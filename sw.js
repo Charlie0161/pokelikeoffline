@@ -1,7 +1,8 @@
 // sw.js — Service Worker for offline Pokelike
-// Place this file in the ROOT of the project (same folder as index.html)
+// CACHE_NAME is injected by generate-sw.js at deploy time.
+// Never edit this file directly — edit generate-sw.js instead.
 
-const CACHE_NAME = 'pokelike-v1';
+const CACHE_NAME = 'pokelike-BUILD_TIMESTAMP';
 
 // Core game files to cache immediately on first load
 const STATIC_ASSETS = [
@@ -20,100 +21,98 @@ const STATIC_ASSETS = [
 ];
 
 // ─── Install ───────────────────────────────────────────────────────────────
-// Cache all static assets when the SW first installs
+// Cache all static assets when the SW first installs.
+// skipWaiting means the new SW activates immediately without waiting for
+// existing tabs to close — so updates appear on next app open.
 self.addEventListener('install', event => {
-  console.log('[SW] Installing...');
+  console.log('[SW] Installing', CACHE_NAME);
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log('[SW] Caching static assets');
-      // addAll fails if any single asset 404s — use individual adds so one
-      // missing file doesn't break everything
-      return Promise.allSettled(
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.allSettled(
         STATIC_ASSETS.map(url => cache.add(url).catch(e =>
           console.warn(`[SW] Failed to cache ${url}:`, e)
         ))
-      );
-    })
+      )
+    )
   );
-  self.skipWaiting(); // activate immediately
+  self.skipWaiting();
 });
 
 // ─── Activate ──────────────────────────────────────────────────────────────
-// Remove old caches when a new SW version activates
+// Delete ALL old caches so stale assets can never surface.
+// clients.claim makes the new SW take over all open tabs immediately.
 self.addEventListener('activate', event => {
-  console.log('[SW] Activating...');
+  console.log('[SW] Activating', CACHE_NAME);
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
         keys
           .filter(key => key !== CACHE_NAME)
           .map(key => {
-            console.log('[SW] Deleting old cache:', key);
+            console.log('[SW] Purging old cache:', key);
             return caches.delete(key);
           })
       )
-    )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim(); // take control of all open tabs immediately
 });
 
 // ─── Fetch ─────────────────────────────────────────────────────────────────
-// Serve from cache first; fall back to network and cache the response
+// Network-first for HTML and JS/CSS (so updates always come through).
+// Cache-first for images/sprites (large, rarely change, need to work offline).
 self.addEventListener('fetch', event => {
   const url = event.request.url;
 
-  // Skip non-GET requests and chrome-extension requests
   if (event.request.method !== 'GET') return;
   if (url.startsWith('chrome-extension://')) return;
 
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) {
-        return cached; // Serve from cache (works offline)
-      }
+  const isSprite =
+    url.includes('/sprites/') ||
+    url.includes('pokemonshowdown.com/sprites') ||
+    url.includes('raw.githubusercontent.com/PokeAPI') ||
+    url.includes('/ui/');
 
-      // Not in cache — try the network
-      return fetch(event.request).then(response => {
-        // Don't cache bad responses
-        if (!response || response.status !== 200 || response.type === 'opaque') {
+  const isGameFile =
+    url.includes('/js/') ||
+    url.includes('/css/') ||
+    url.includes('index.html') ||
+    url.endsWith('/');
+
+  if (isSprite) {
+    // Cache-first: sprites are large and don't change — serve from cache,
+    // fall back to network and cache the result for next time.
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        return fetch(event.request).then(response => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+          }
           return response;
-        }
-
-        // Cache sprites, UI images, and JS/CSS files as they load
-        const shouldCache =
-          url.includes('/sprites/') ||
-          url.includes('/ui/') ||
-          url.includes('/css/') ||
-          url.includes('/js/') ||
-          url.includes('pokemonshowdown.com/sprites') ||
-          url.includes('raw.githubusercontent.com/PokeAPI');
-
-        if (shouldCache) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseClone);
-          });
-        }
-
-        return response;
-      }).catch(() => {
-        // Completely offline and not cached
-        // Return a transparent 1x1 PNG for missing images so the game
-        // doesn't break with broken image icons
-        if (
-          event.request.destination === 'image' ||
-          url.endsWith('.png') ||
-          url.endsWith('.jpg')
-        ) {
+        }).catch(() => {
+          // Offline fallback: 1×1 transparent PNG so the game doesn't break
           return new Response(
-            // Minimal valid 1x1 transparent PNG
             Uint8Array.from(atob(
               'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
             ), c => c.charCodeAt(0)),
             { headers: { 'Content-Type': 'image/png' } }
           );
+        });
+      })
+    );
+  } else if (isGameFile) {
+    // Network-first: always try to get the freshest JS/CSS/HTML.
+    // Falls back to cache so the game still works offline.
+    event.respondWith(
+      fetch(event.request).then(response => {
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
         }
-      });
-    })
-  );
+        return response;
+      }).catch(() => caches.match(event.request))
+    );
+  }
+  // All other requests (fonts, external APIs etc.) pass through unchanged.
 });
