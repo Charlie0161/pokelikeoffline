@@ -3757,15 +3757,6 @@ function openSettingsModal() {
 
   const modal = document.createElement('div');
   modal.id = 'settings-modal';
-  // Full-screen overlay so mobile Safari doesn't intercept taps
-  modal.style.cssText = [
-    'position:fixed', 'inset:0', 'z-index:500',
-    'background:rgba(0,0,0,0.75)',
-    'display:flex', 'align-items:center', 'justify-content:center',
-    '-webkit-overflow-scrolling:touch',
-  ].join(';');
-  // Tap outside to close
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
 
   function row(label, key, disabled = false) {
     const s = getSettings();
@@ -3778,7 +3769,7 @@ function openSettingsModal() {
   function render() {
     const s = getSettings();
     modal.innerHTML = `
-      <div class="settings-modal-box" style="max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;width:min(340px,92vw);">
+      <div class="settings-modal-box">
         <div class="settings-modal-header">
           <span>Settings</span>
           <button class="ach-modal-close" onclick="document.getElementById('settings-modal').remove()">✕</button>
@@ -3845,8 +3836,11 @@ function openAchievementsModal() {
 
   const modal = document.createElement('div');
   modal.id = 'achievements-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;-webkit-overflow-scrolling:touch;';
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+
   modal.innerHTML = `
-    <div class="ach-modal-box">
+    <div class="ach-modal-box" style="max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;width:min(520px,96vw);">
       <div class="ach-modal-header">
         <span>Achievements (${unlocked.size}/${ACHIEVEMENTS.length})</span>
         <button class="ach-modal-close" onclick="document.getElementById('achievements-modal').remove()">✕</button>
@@ -3963,8 +3957,11 @@ async function openPokedexModal(initialTab = 'normal') {
 
   const modal = document.createElement('div');
   modal.id = 'pokedex-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;-webkit-overflow-scrolling:touch;';
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+
   modal.innerHTML = `
-    <div class="dex-modal-box">
+    <div class="dex-modal-box" style="max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;width:min(520px,96vw);">
       <div class="dex-modal-header">
         <div class="dex-tabs">
           <button class="dex-tab" data-tab="normal">📖 Pokédex</button>
@@ -4078,6 +4075,8 @@ function openDexDetailModal(speciesId, name, spriteUrl, shinySpriteUrl, types) {
 
   const modal = document.createElement('div');
   modal.id = 'dex-detail-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;-webkit-overflow-scrolling:touch;';
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
   modal.innerHTML = `
     <div class="dex-detail-box">
       <div class="dex-detail-header">
@@ -4843,6 +4842,8 @@ async function openHallOfFameModal() {
 
   const modal = document.createElement('div');
   modal.id = 'hof-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;-webkit-overflow-scrolling:touch;';
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
   modal.style.cssText = 'position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;';
 
   function entryMatchesFilter(e, filter) {
