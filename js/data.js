@@ -1916,11 +1916,6 @@ function itemIconHtml(item, size = 24) {
   return `<img src="${url}" alt="${item.name}" title="${item.name}" class="item-sprite-icon" `
        + `style="width:${size}px;height:${size}px;image-rendering:pixelated;vertical-align:middle;" `
        + `onerror="this.style.display='none';this.insertAdjacentText('afterend','${esc}');">`;
-}.png`;
-  const esc = item.icon.replace(/'/g, "\\'");
-  return `<img src="${url}" alt="${item.name}" title="${item.name}" class="item-sprite-icon" `
-       + `style="width:${size}px;height:${size}px;image-rendering:pixelated;vertical-align:middle;" `
-       + `onerror="this.replaceWith(document.createTextNode('${esc}'))">`;
 }
 
 function isShinyGenDexComplete(minId, maxId) {
