@@ -1,3 +1,30 @@
+/* ===== PORTRAIT LOCK ============================= */
+/* Force portrait orientation on mobile devices.     */
+/* Shows a rotate prompt when in landscape.          */
+
+@media screen and (orientation: landscape) and (max-height: 500px) {
+  body::before {
+    content: 'Please rotate your device to portrait mode';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #1a1a2e;
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    line-height: 2;
+  }
+  /* Hide everything else behind the prompt */
+  body > * {
+    visibility: hidden;
+  }
+}
+
 /* ============================================================
    mobile.css — Pokelike mobile optimisation
    Add this file to your project and link it in index.html
