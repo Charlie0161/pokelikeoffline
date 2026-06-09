@@ -113,38 +113,76 @@ function generateMap(mapIndex, nuzlockeMode = false, gen2Mode = false) {
   const makeLayerEdges = (fromLayer, toLayer) => {
     const N = fromLayer.length;
     const M = toLayer.length;
-    // Fan out from a single source
+
+    // Single source fans out to all targets (START node)
     if (N === 1) return toLayer.map(t => ({ from: fromLayer[0].id, to: t.id }));
-    // Funnel everything into a single target (boss layer)
+    // Everything funnels into single target (BOSS node)
     if (M === 1) return fromLayer.map(f => ({ from: f.id, to: toLayer[0].id }));
 
-    // Crossing-free mapping: each node connects only to its proportionally
-    // mapped neighbour(s) in the next layer. Because we map left→left and
-    // right→right, lines between non-adjacent columns are impossible.
+    // ── Strict crossing-free edges ──────────────────────────────────
+    // A set of edges is crossing-free if and only if the mapping is
+    // monotone: if source i < source i', all targets of i must be ≤
+    // all targets of i'. We achieve this by only connecting each node
+    // to its proportional neighbour(s), never skipping over a column.
+    //
+    // With our layer sizes of 2 and 3 the only cases are:
+    //   2→2: straight down (0→0, 1→1)
+    //   2→3: fan out  (0→0,1  1→1,2)
+    //   3→2: funnel   (0→0,   1→0 or 1,  2→1)
+    //   3→3: straight down
+
     const edges = [];
-    const seen = new Set();
-    const add = (f, t) => {
-      const key = f + '->' + t;
+    const seen  = new Set();
+    const add   = (f, t) => {
+      const key = `${f}->${t}`;
       if (!seen.has(key)) { seen.add(key); edges.push({ from: f, to: t }); }
     };
 
-    for (let i = 0; i < N; i++) {
-      // Map i (0..N-1) to the equivalent fractional position in 0..M-1
-      const frac = (N === 1) ? 0 : i / (N - 1);
-      const mapped = frac * (M - 1);
-      const lo = Math.floor(mapped);
-      const hi = Math.min(lo + 1, M - 1);
-      add(fromLayer[i].id, toLayer[lo].id);
-      if (hi !== lo) add(fromLayer[i].id, toLayer[hi].id);
+    if (N === M) {
+      // Same size — straight down, one-to-one
+      for (let i = 0; i < N; i++) add(fromLayer[i].id, toLayer[i].id);
+
+    } else if (M > N) {
+      // Expanding (e.g. 2→3): left node fans left, right node fans right,
+      // middle target(s) get shared. Never skip a column.
+      // Each source i connects to targets [i * step, i * step + 1]
+      // where step = (M-1)/(N-1). Because step is always an integer
+      // for our sizes (step=2 for 2→3, step=1 for 3→4 etc.)
+      // this is guaranteed crossing-free.
+      const step = (M - 1) / (N - 1); // exact integer for our sizes
+      for (let i = 0; i < N; i++) {
+        const base = Math.round(i * step);
+        add(fromLayer[i].id, toLayer[base].id);
+        // Also connect to the next target so every target has an in-edge
+        if (base + 1 < M) add(fromLayer[i].id, toLayer[base + 1].id);
+      }
+
+    } else {
+      // Shrinking (e.g. 3→2): leftmost→leftmost, rightmost→rightmost,
+      // middle node(s) connect to whichever adjacent target keeps the
+      // map balanced. Use rng() so paths vary each run.
+      add(fromLayer[0].id,     toLayer[0].id);
+      add(fromLayer[N - 1].id, toLayer[M - 1].id);
+      // Middle nodes: connect to floor or ceil of their proportional target
+      for (let i = 1; i < N - 1; i++) {
+        const frac   = i / (N - 1);
+        const mapped = frac * (M - 1);
+        // Use rng() to decide left or right so paths vary, but always
+        // pick the proportionally nearest target to stay crossing-free.
+        const target = (rng() < (mapped - Math.floor(mapped)) + 0.5)
+          ? Math.min(Math.ceil(mapped),  M - 1)
+          : Math.max(Math.floor(mapped), 0);
+        add(fromLayer[i].id, toLayer[target].id);
+      }
     }
 
-    // Guarantee every target node has at least one incoming edge
+    // Safety: guarantee every target has at least one incoming edge.
+    // This can only happen on the shrinking path if middle nodes all
+    // went the same direction — fix by connecting the nearest source.
     for (let j = 0; j < M; j++) {
-      const hasIncoming = edges.some(e => e.to === toLayer[j].id);
-      if (!hasIncoming) {
-        // Connect to the closest source node
-        const closest = Math.round(j * (N - 1) / (M - 1));
-        add(fromLayer[Math.min(closest, N - 1)].id, toLayer[j].id);
+      if (!edges.some(e => e.to === toLayer[j].id)) {
+        const src = Math.round(j * (N - 1) / (M - 1));
+        add(fromLayer[Math.min(src, N - 1)].id, toLayer[j].id);
       }
     }
 
