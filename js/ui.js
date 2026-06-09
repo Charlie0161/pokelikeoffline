@@ -3757,6 +3757,15 @@ function openSettingsModal() {
 
   const modal = document.createElement('div');
   modal.id = 'settings-modal';
+  // Full-screen overlay so mobile Safari doesn't intercept taps
+  modal.style.cssText = [
+    'position:fixed', 'inset:0', 'z-index:500',
+    'background:rgba(0,0,0,0.75)',
+    'display:flex', 'align-items:center', 'justify-content:center',
+    '-webkit-overflow-scrolling:touch',
+  ].join(';');
+  // Tap outside to close
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
 
   function row(label, key, disabled = false) {
     const s = getSettings();
@@ -3769,7 +3778,7 @@ function openSettingsModal() {
   function render() {
     const s = getSettings();
     modal.innerHTML = `
-      <div class="settings-modal-box">
+      <div class="settings-modal-box" style="max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;width:min(340px,92vw);">
         <div class="settings-modal-header">
           <span>Settings</span>
           <button class="ach-modal-close" onclick="document.getElementById('settings-modal').remove()">✕</button>
