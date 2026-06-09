@@ -22,7 +22,6 @@
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Pokelike">
-  <meta name="screen-orientation" content="portrait">
   <meta name="theme-color" content="#1a1a2e">
   <script>window.__cacheBust = Date.now();</script>
   <script>document.write('<link rel="stylesheet" href="css/style.css?v=' + window.__cacheBust + '">');</script>
@@ -121,6 +120,7 @@
     <div id="map-info"></div>
     <div style="display:flex;align-items:center;gap:8px;">
       <div id="badge-count"></div>
+      <button onclick="openManageScreen()" class="btn-icon-sm" title="Team &amp; Items" style="font-size:16px;">🎒</button>
       <button onclick="openPokedexModal()" class="btn-icon-sm" title="Pokédex"><img src="ui/pokedex.png" alt="Pokédex"></button>
       <button onclick="openAchievementsModal()" class="btn-icon-sm" title="Achievements"><img src="ui/achievements.png" alt="Achievements"></button>
       <button onclick="openSettingsModal()" class="btn-icon-sm" title="Settings"><img src="ui/settings.png" alt="Settings"></button>
@@ -130,6 +130,7 @@
 
   <!-- Desktop-only top-right buttons -->
   <div class="map-actions">
+    <button onclick="openManageScreen()" class="btn-icon-sm" title="Team &amp; Items" style="font-size:16px;">🎒</button>
     <button onclick="openPokedexModal()" class="btn-icon-sm" title="Pokédex"><img src="ui/pokedex.png" alt="Pokédex"></button>
     <button onclick="openAchievementsModal()" class="btn-icon-sm" title="Achievements"><img src="ui/achievements.png" alt="Achievements"></button>
     <button onclick="openSettingsModal()" class="btn-icon-sm" title="Settings"><img src="ui/settings.png" alt="Settings"></button>
@@ -385,6 +386,57 @@
     document.write('<script src="js/' + n + '.js?v=' + window.__cacheBust + '"><\/script>');
   });
 </script>
+
+
+<!-- ===== SETTINGS SCREEN ===== -->
+<div id="settings-screen" class="screen">
+  <div class="fullscreen-header">
+    <button class="btn-back" onclick="goBack()">← Back</button>
+    <span class="fullscreen-title">⚙️ Settings</span>
+  </div>
+  <div id="settings-screen-body" class="fullscreen-body"></div>
+</div>
+
+<!-- ===== MANAGE SCREEN (Team + Items) ===== -->
+<div id="manage-screen" class="screen">
+  <div class="fullscreen-header">
+    <button class="btn-back" onclick="goBack()">← Back</button>
+    <span class="fullscreen-title">🎒 Team &amp; Items</span>
+  </div>
+  <div class="fullscreen-body">
+    <div class="manage-section-label">TEAM — tap to reorder, tap item to swap</div>
+    <div id="manage-team-grid" class="manage-team-grid"></div>
+    <div class="manage-section-label" style="margin-top:16px;">BAG ITEMS</div>
+    <div id="manage-item-grid" class="manage-item-grid"></div>
+  </div>
+</div>
+
+<!-- ===== ACHIEVEMENTS SCREEN ===== -->
+<div id="achievements-screen" class="screen">
+  <div class="fullscreen-header">
+    <button class="btn-back" onclick="goBack()">← Back</button>
+    <span class="fullscreen-title">🏆 Achievements</span>
+  </div>
+  <div id="achievements-screen-body" class="fullscreen-body"></div>
+</div>
+
+<!-- ===== POKEDEX SCREEN ===== -->
+<div id="pokedex-screen" class="screen">
+  <div class="fullscreen-header">
+    <button class="btn-back" onclick="goBack()">← Back</button>
+    <span class="fullscreen-title">📖 Pokédex</span>
+  </div>
+  <div id="pokedex-screen-body" class="fullscreen-body"></div>
+</div>
+
+<!-- ===== HALL OF FAME SCREEN ===== -->
+<div id="hof-screen" class="screen">
+  <div class="fullscreen-header">
+    <button class="btn-back" onclick="goBack()">← Back</button>
+    <span class="fullscreen-title">🏛️ Hall of Fame</span>
+  </div>
+  <div id="hof-screen-body" class="fullscreen-body"></div>
+</div>
 
 <!-- Service Worker registration — enables offline play -->
 <script>

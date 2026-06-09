@@ -5,6 +5,21 @@ const SKIP_SPEED = 3;
 const OVERTIME_SPEED = 5;
 let battleSpeedMultiplier = 1;
 
+// ── Full-screen navigation ────────────────────────────────────────────────
+// Replaces modal popups with proper full-screen views for mobile friendliness.
+let _prevScreen = null;
+function openFullScreen(screenId, populateFn) {
+  _prevScreen = document.querySelector('.screen.active')?.id || 'map-screen';
+  if (populateFn) populateFn();
+  showScreen(screenId);
+}
+function goBack() {
+  if (_prevScreen) showScreen(_prevScreen);
+  else showScreen('map-screen');
+}
+// ── End full-screen navigation ────────────────────────────────────────────
+
+
 let _hoverEnabled = true;
 document.addEventListener('mousemove',   () => { _hoverEnabled = true; }, { capture: true, passive: true });
 document.addEventListener('touchstart',  () => { _hoverEnabled = true; }, { capture: true, passive: true });
@@ -406,6 +421,100 @@ function renderItemBadges(items, el, afterUse = null) {
   });
 }
 
+// ── Manage Screen — full-screen team & item management for mobile ─────────
+function openManageScreen() {
+  openFullScreen('manage-screen', () => {
+    renderManageScreen();
+  });
+}
+
+function renderManageScreen() {
+  const teamGrid = document.getElementById('manage-team-grid');
+  const itemGrid = document.getElementById('manage-item-grid');
+  if (!teamGrid || !itemGrid) return;
+
+  // ── Team grid ──────────────────────────────────────────────
+  teamGrid.innerHTML = '';
+  let selectedIdx = null;
+
+  state.team.forEach((p, i) => {
+    const pct = Math.max(0, p.currentHp / p.maxHp);
+    const color = hpBarColor(pct);
+    const card = document.createElement('div');
+    card.className = 'manage-poke-card';
+    card.dataset.idx = i;
+    card.innerHTML = `
+      <img src="${p.spriteUrl||''}" class="manage-poke-sprite" onerror="this.style.opacity='0'">
+      <div class="manage-poke-name">${p.nickname||p.name}</div>
+      <div class="manage-poke-lv">Lv${p.level}</div>
+      <div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin:2px 0;">
+        ${(p.types||[]).map(t=>`<span class="type-badge type-${t.toLowerCase()}" style="font-size:5px;padding:1px 3px;">${t}</span>`).join('')}
+      </div>
+      <div class="hp-bar-bg sm" style="margin-top:4px;"><div class="hp-bar-fill" style="width:${Math.floor(pct*100)}%;background:${color}"></div></div>
+      <div style="font-size:7px;color:var(--text-dim);margin-top:2px;">${p.currentHp}/${p.maxHp} HP</div>
+      ${p.heldItem ? `<div class="manage-held-item">${itemIconHtml(p.heldItem, 18)} <span style="font-size:7px;">${p.heldItem.name}</span></div>` : '<div class="manage-held-item" style="opacity:0.4;font-size:7px;">No item</div>'}
+    `;
+
+    card.addEventListener('click', () => {
+      if (selectedIdx === null) {
+        // First tap — select
+        selectedIdx = i;
+        teamGrid.querySelectorAll('.manage-poke-card').forEach(c => c.classList.remove('manage-selected'));
+        card.classList.add('manage-selected');
+      } else if (selectedIdx === i) {
+        // Tap same card — open item equip
+        card.classList.remove('manage-selected');
+        selectedIdx = null;
+        if (p.heldItem) {
+          openItemEquipModal(p.heldItem, {
+            fromPokemonIdx: i,
+            onComplete: () => renderManageScreen(),
+          });
+        }
+      } else {
+        // Tap different card — swap positions
+        [state.team[selectedIdx], state.team[i]] = [state.team[i], state.team[selectedIdx]];
+        selectedIdx = null;
+        saveRun();
+        renderManageScreen();
+      }
+    });
+
+    teamGrid.appendChild(card);
+  });
+
+  // ── Item grid ──────────────────────────────────────────────
+  itemGrid.innerHTML = '';
+  if (!state.items.length) {
+    itemGrid.innerHTML = '<div style="opacity:0.5;font-size:9px;text-align:center;padding:12px;">Bag is empty</div>';
+    return;
+  }
+
+  state.items.forEach((it, idx) => {
+    const card = document.createElement('div');
+    card.className = 'manage-item-card';
+    card.innerHTML = `
+      <div class="manage-item-icon">${itemIconHtml(it, 28)}</div>
+      <div class="manage-item-name">${it.name}</div>
+      <div class="manage-item-desc">${it.desc}</div>
+    `;
+    card.addEventListener('click', () => {
+      if (it.usable) {
+        openUsableItemModal(it, idx, () => renderManageScreen());
+      } else {
+        openItemEquipModal(it, {
+          fromBagIdx: idx,
+          onComplete: () => renderManageScreen(),
+        });
+      }
+    });
+    itemGrid.appendChild(card);
+  });
+}
+// ── End manage screen ─────────────────────────────────────────────────────
+
+
+
 
 // Render battlefield — first alive pokemon on each side starts as active
 function renderBattleField(pTeam, eTeam) {
@@ -423,7 +532,7 @@ function renderBattleField(pTeam, eTeam) {
         <div class="battle-poke-name">${p.nickname||p.name} Lv${p.level}</div>
         <div class="poke-hp">${hpBlock}</div>
         <img src="ui/battleBase.png" class="battle-base" alt="">
-        <img src="${p.spriteUrl||''}" alt="${p.name}" class="battle-sprite" onerror="if(!this.dataset.retry){this.dataset.retry='1';this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.speciesId||p.id}.png';}else{this.style.opacity='0';}">
+        <img src="${p.spriteUrl||''}" alt="${p.name}" class="battle-sprite" onerror="this.src=''">
         <div class="battle-stages"></div>
       </div>`;
     }).join('');
@@ -436,7 +545,7 @@ function renderBattleField(pTeam, eTeam) {
         <div class="battle-poke-name">${p.name} Lv${p.level}</div>
         <div class="poke-hp">${renderHpBar(p.currentHp, p.maxHp)}</div>
         <img src="ui/battleBase.png" class="battle-base" alt="">
-        <img src="${p.spriteUrl||''}" alt="${p.name}" class="battle-sprite" onerror="if(!this.dataset.retry){this.dataset.retry='1';this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.speciesId||p.id}.png';}else{this.style.opacity='0';}">
+        <img src="${p.spriteUrl||''}" alt="${p.name}" class="battle-sprite" onerror="this.src=''">
         <div class="battle-stages"></div>
       </div>`;
     }).join('');
@@ -2710,7 +2819,7 @@ async function animateInteractiveEvents(events, pTeam, eTeam, hpTrack) {
         el.classList.remove('fainted');
         el.classList.add('active-pokemon');
         const spr = el.querySelector('.battle-sprite');
-        if (spr) { spr.classList.remove('entering'); void spr.offsetWidth; spr.classList.add('entering'); const _enterDur = Math.max(80, Math.round(520 / battleSpeedMultiplier)); setTimeout(() => spr.classList.remove('entering'), _enterDur); }
+        if (spr) { spr.classList.remove('entering'); void spr.offsetWidth; spr.classList.add('entering'); setTimeout(() => spr.classList.remove('entering'), 520); }
       }
       await sleep(360);
 
@@ -3752,102 +3861,74 @@ function applyDarkMode() {
 }
 
 function openSettingsModal() {
-  const existing = document.getElementById('settings-modal');
-  if (existing) { existing.remove(); return; }
+  openFullScreen('settings-screen', () => {
+    const body = document.getElementById('settings-screen-body');
+    if (!body) return;
 
-  const modal = document.createElement('div');
-  modal.id = 'settings-modal';
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    function row(label, key, disabled = false) {
+      const s = getSettings();
+      return `<label class="settings-row${disabled ? ' settings-row-disabled' : ''}">
+        <span class="settings-label">${label}</span>
+        <input type="checkbox" class="settings-checkbox" data-key="${key}" ${s[key] ? 'checked' : ''} ${disabled ? 'disabled' : ''}>
+      </label>`;
+    }
 
-  function row(label, key, disabled = false) {
-    const s = getSettings();
-    return `<label class="settings-row${disabled ? ' settings-row-disabled' : ''}">
-      <span class="settings-label">${label}</span>
-      <input type="checkbox" class="settings-checkbox" data-key="${key}" ${s[key] ? 'checked' : ''} ${disabled ? 'disabled' : ''}>
-    </label>`;
-  }
-
-  function render() {
-    const s = getSettings();
-    modal.innerHTML = `
-      <div class="settings-modal-box" style="max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;">
-        <div class="settings-modal-header">
-          <span>Settings</span>
-          <button class="ach-modal-close" onclick="document.getElementById('settings-modal').remove()">✕</button>
-        </div>
-        <div class="settings-section-title">Display</div>
-        ${row('Dark Mode', 'darkMode')}
-        ${row('Battle Shake', 'battleShake')}
-        <div class="settings-section-title">Auto-Skip</div>
-        ${row('Regular Trainers', 'autoSkipBattles', s.autoSkipAllBattles)}
-        ${row('All Fights', 'autoSkipAllBattles')}
-        ${row('Evolutions', 'autoSkipEvolve')}
-      </div>`;
-
-    modal.querySelectorAll('.settings-checkbox').forEach(cb => {
-      cb.onchange = () => {
-        const s2 = getSettings();
-        s2[cb.dataset.key] = cb.checked;
-        saveSettings(s2);
-        applyDarkMode();
-        render();
-      };
-    });
-
-  }
-
-  render();
-  document.body.appendChild(modal);
+    function render() {
+      const s = getSettings();
+      body.innerHTML = `
+        <div class="settings-modal-box" style="width:100%;max-width:100%;border:none;box-shadow:none;background:transparent;">
+          <div class="settings-section-title">Display</div>
+          ${row('Dark Mode', 'darkMode')}
+          ${row('Battle Shake', 'battleShake')}
+          <div class="settings-section-title">Auto-Skip</div>
+          ${row('Regular Trainers', 'autoSkipBattles', s.autoSkipAllBattles)}
+          ${row('All Fights', 'autoSkipAllBattles')}
+          ${row('Evolutions', 'autoSkipEvolve')}
+        </div>`;
+      body.querySelectorAll('.settings-checkbox').forEach(cb => {
+        cb.onchange = () => {
+          const s2 = getSettings();
+          s2[cb.dataset.key] = cb.checked;
+          saveSettings(s2);
+          applyDarkMode();
+          render();
+        };
+      });
+    }
+    render();
+  });
 }
 
 // ---- Achievements Modal ----
 
 function openAchievementsModal() {
-  const existing = document.getElementById('achievements-modal');
-  if (existing) { existing.remove(); return; }
-
-  const unlocked = getUnlockedAchievements();
-
-  const CATEGORIES = [
-    { key: 'normal',    label: 'Gen 1 — Classic' },
-    { key: 'gen1_nuz',  label: 'Gen 1 — Nuzlocke' },
-    { key: 'gen1_chal', label: 'Gen 1 — Challenges' },
-    { key: 'gen2_norm', label: 'Gen 2 — Normal' },
-    { key: 'gen2_nuz',  label: 'Gen 2 — Nuzlocke' },
-    { key: 'gen2_chal', label: 'Gen 2 — Challenges' },
-    { key: 'tower',     label: 'Battle Tower' },
-    { key: 'general',   label: 'General' },
-  ];
-
-  const categorySections = CATEGORIES.map(({ key, label }) => {
-    const group = ACHIEVEMENTS.filter(a => a.category === key);
-    const groupUnlocked = group.filter(a => unlocked.has(a.id)).length;
-    const cards = group.map(a => {
-      const done = unlocked.has(a.id);
-      return `<div class="ach-card ${done ? 'unlocked' : 'locked'}">
-        <div class="ach-icon">${achievementIconHtml(a)}</div>
-        <div class="ach-name">${a.name}</div>
-        <div class="ach-desc">${a.desc}</div>
-      </div>`;
+  openFullScreen('achievements-screen', () => {
+    const body = document.getElementById('achievements-screen-body');
+    if (!body) return;
+    const unlocked = new Set(getUnlockedAchievements());
+    const categories = { normal: 'Main Game', tower: 'Battle Tower', general: 'General' };
+    const grouped = {};
+    for (const ach of ACHIEVEMENTS) {
+      const cat = ach.category || 'normal';
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(ach);
+    }
+    const categorySections = Object.entries(categories).map(([cat, label]) => {
+      const items = (grouped[cat] || []).map(ach => {
+        const done = unlocked.has(ach.id);
+        return `<div class="ach-item${done ? ' ach-item--done' : ''}">
+          <span class="ach-icon">${ach.icon}</span>
+          <div class="ach-info">
+            <div class="ach-name">${ach.name}</div>
+            <div class="ach-desc">${ach.desc}</div>
+          </div>
+          ${done ? '<span class="ach-check">✓</span>' : ''}
+        </div>`;
+      }).join('');
+      return `<div class="ach-category-header"><span>${label}</span><span>${(grouped[cat]||[]).filter(a=>unlocked.has(a.id)).length}/${(grouped[cat]||[]).length}</span></div>${items}`;
     }).join('');
-    return `
-      <div class="ach-category-header">${label} <span class="ach-category-count">${groupUnlocked}/${group.length}</span></div>
-      <div class="ach-modal-grid">${cards}</div>`;
-  }).join('');
-
-  const modal = document.createElement('div');
-  modal.id = 'achievements-modal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;';
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-  modal.innerHTML = `
-    <div class="ach-modal-box" style="max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;width:min(520px,96vw);">
-      <div class="ach-modal-header">
-        <span>Achievements (${unlocked.size}/${ACHIEVEMENTS.length})</span>
-        <button class="ach-modal-close" onclick="document.getElementById('achievements-modal').remove()">✕</button>
-      </div>
-      <div class="ach-modal-body">${categorySections}</div>
-    </div>`;
-  document.body.appendChild(modal);
+    body.innerHTML = `<div class="ach-modal-body" style="padding:8px;">${categorySections}</div>`;
+  });
 }
 
 // ---- Pokedex Modal ----
@@ -3957,9 +4038,8 @@ async function openPokedexModal(initialTab = 'normal') {
 
   const modal = document.createElement('div');
   modal.id = 'pokedex-modal';
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
   modal.innerHTML = `
-    <div class="dex-modal-box" style="max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;width:min(580px,96vw);">
+    <div class="dex-modal-box">
       <div class="dex-modal-header">
         <div class="dex-tabs">
           <button class="dex-tab" data-tab="normal">📖 Pokédex</button>
@@ -4073,8 +4153,6 @@ function openDexDetailModal(speciesId, name, spriteUrl, shinySpriteUrl, types) {
 
   const modal = document.createElement('div');
   modal.id = 'dex-detail-modal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;';
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
   modal.innerHTML = `
     <div class="dex-detail-box">
       <div class="dex-detail-header">
@@ -4826,109 +4904,29 @@ function openPatchNotesModal() {
 // ---- Hall of Fame Modal ----
 
 async function openHallOfFameModal() {
-  const existing = document.getElementById('hof-modal');
-  if (existing) { existing.remove(); return; }
-
-  // Slim HoF entries don't carry Pokemon names — look them up from the bundled
-  // static pokedex at render time. Await the load to avoid the first paint
-  // showing "#1, #4, #7" instead of names.
-  if (typeof loadStaticPokedex === 'function') {
-    try { await loadStaticPokedex(); } catch {}
-  }
-
-  const entries = getHallOfFame();
-
-  const modal = document.createElement('div');
-  modal.id = 'hof-modal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch;';
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-  modal.style.cssText = 'position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;';
-
-  function entryMatchesFilter(e, filter) {
-    if (filter === 'all')      return true;
-    if (filter === 'normal')   return !e.endless && !e.hardMode && !e.gen2Mode;
-    if (filter === 'nuzlocke') return !e.endless && !!e.hardMode;
-    if (filter === 'tower')    return !!e.endless;
-    if (filter === 'gen2')     return !e.endless && !!e.gen2Mode;
-    return true;
-  }
-
-  const renderEntries = (filter) => entries.length === 0
-    ? '<div style="color:var(--text-dim);text-align:center;padding:24px;font-size:11px;">No championships yet.<br>Defeat the Elite Four to be remembered!</div>'
-    : (() => {
-        const filtered = [...entries].reverse().filter(e => entryMatchesFilter(e, filter));
-        if (filtered.length === 0) {
-          return '<div style="color:var(--text-dim);text-align:center;padding:24px;font-size:11px;">No runs match this filter.</div>';
-        }
-        return filtered.map(renderEntryHtml).join('');
-      })();
-
-  function renderEntryHtml(e) {
-    const SPRITE_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
-    const pokemonHtml = e.team.map(p => {
-      // Slim entries store only speciesId — look up display fields at render
-      // time. Legacy entries may still carry p.name / p.spriteUrl; prefer
-      // them when present so a mid-migration render still works.
-      const name   = p.nickname || p.name || getSpeciesName(p.speciesId);
-      const sprite = p.spriteUrl
-        || `${SPRITE_BASE}${p.isShiny ? 'shiny/' : ''}${p.speciesId}.png`;
-      const itemHtml = p.heldItem
-        ? `<div style="display:flex;align-items:center;gap:2px;font-size:7px;color:var(--text-dim);">${itemIconHtml(p.heldItem, 12)}</div>`
-        : '';
-      return `
-      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-        <img src="${sprite}" style="width:48px;height:48px;image-rendering:pixelated;${p.isShiny ? 'filter:drop-shadow(0 0 4px gold);' : ''}" title="${name}">
-        <div style="font-size:7px;color:${p.isShiny ? 'gold' : 'var(--text-dim)'};">${name}</div>
-        <div style="font-size:7px;color:var(--text-dim);">Lv.${p.level}</div>
-        ${itemHtml}
+  openFullScreen('hof-screen', async () => {
+    const body = document.getElementById('hof-screen-body');
+    if (!body) return;
+    body.innerHTML = '<div style="text-align:center;padding:20px;opacity:0.7;">Loading...</div>';
+    const entries = getHallOfFame();
+    if (!entries.length) {
+      body.innerHTML = '<div style="text-align:center;padding:20px;opacity:0.7;font-size:10px;">No entries yet — beat the game to add your first!</div>';
+      return;
+    }
+    body.innerHTML = entries.slice().reverse().map((entry, i) => {
+      const team = (entry.team || []).map(p => {
+        const sid = p.speciesId || p.id;
+        const spr = sid ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sid}.png` : '';
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <img src="${spr}" style="width:40px;height:40px;image-rendering:pixelated;" onerror="this.style.display='none'">
+          <span style="font-size:6px;color:var(--text-dim);">${p.name||''} Lv${p.level||'?'}</span>
+        </div>`;
+      }).join('');
+      const mode = entry.nuzlocke ? ' 🔴 Nuzlocke' : entry.gen2 ? ' Gen II' : ' Gen I';
+      return `<div style="border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:10px;">
+        <div style="font-size:8px;color:var(--accent);margin-bottom:6px;">Run #${entry.wins || (entries.length - i)}${mode}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">${team}</div>
       </div>`;
     }).join('');
-    return `
-      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <span style="font-size:10px;color:gold;font-weight:bold;">${e.endless ? `Battle Tower: ${getStageName(e.stageNumber)}` : `Championship #${e.runNumber}`}${e.hardMode ? ' ☠️' : ''}${e.gen2Mode ? ' ⅠⅠ' : ''}</span>
-          <span style="font-size:9px;color:var(--text-dim);">${e.date}</span>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">${pokemonHtml}</div>
-      </div>`;
-  }
-
-  const filterChipsHtml = entries.length > 0 ? `
-    <div id="hof-filter-bar" style="display:flex;gap:4px;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid var(--border);">
-      ${['all','normal','nuzlocke','tower','gen2'].map(f =>
-        `<button class="hof-filter-chip${f === 'all' ? ' active' : ''}" data-filter="${f}" style="font-family:'Press Start 2P',monospace;font-size:7px;padding:4px 6px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;border-radius:4px;">${f === 'all' ? 'All' : f === 'normal' ? 'Normal' : f === 'nuzlocke' ? 'Nuzlocke' : f === 'tower' ? 'Battle Tower' : 'Gen 2'}</button>`
-      ).join('')}
-    </div>` : '';
-
-  modal.innerHTML = `
-    <div style="background:var(--bg-main);border:2px solid var(--border);border-radius:12px;width:90%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);">
-        <span style="font-family:'Press Start 2P',monospace;font-size:10px;color:gold;">Hall of Fame</span>
-        <button style="background:none;border:none;color:var(--text-main);font-size:16px;cursor:pointer;line-height:1;" onclick="document.getElementById('hof-modal').remove()">✕</button>
-      </div>
-      ${filterChipsHtml}
-      <div id="hof-entries" style="overflow-y:auto;padding:14px;font-family:'Press Start 2P',monospace;flex:1;">${renderEntries('all')}</div>
-    </div>`;
-
-  document.body.appendChild(modal);
-
-  modal.querySelectorAll('.hof-filter-chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      modal.querySelectorAll('.hof-filter-chip').forEach(b => {
-        b.classList.remove('active');
-        b.style.background = 'var(--bg-card)';
-        b.style.color = 'var(--text-dim)';
-      });
-      btn.classList.add('active');
-      btn.style.background = 'var(--accent)';
-      btn.style.color = '#181410';
-      document.getElementById('hof-entries').innerHTML = renderEntries(btn.dataset.filter);
-    });
   });
-  // Highlight default 'all' chip
-  const defaultChip = modal.querySelector('.hof-filter-chip.active');
-  if (defaultChip) {
-    defaultChip.style.background = 'var(--accent)';
-    defaultChip.style.color = '#181410';
-  }
 }
