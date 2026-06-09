@@ -2704,13 +2704,16 @@ async function animateInteractiveEvents(events, pTeam, eTeam, hpTrack) {
   for (const ev of events) {
     if (ev.type === 'send_out') {
       const sideId = ev.side === 'player' ? 'player-side' : 'enemy-side';
-      document.querySelectorAll(`#${sideId} .battle-pokemon`).forEach(el => el.classList.remove('active-pokemon'));
+      document.querySelectorAll(`#${sideId} .battle-pokemon`).forEach(el => {
+        el.classList.remove('active-pokemon');
+        el.querySelector('.battle-sprite')?.classList.remove('entering');
+      });
       const el = elFor(ev.side, ev.idx);
       if (el) {
         el.classList.remove('fainted');
         el.classList.add('active-pokemon');
         const spr = el.querySelector('.battle-sprite');
-        if (spr) { spr.classList.remove('entering'); void spr.offsetWidth; spr.classList.add('entering'); setTimeout(() => spr.classList.remove('entering'), 520); }
+        if (spr) { void spr.offsetWidth; spr.classList.add('entering'); const _enterDur = Math.max(80, Math.round(520 / battleSpeedMultiplier)); setTimeout(() => spr.classList.remove('entering'), _enterDur); }
       }
       await sleep(360);
 
@@ -3111,18 +3114,22 @@ async function animateBattleVisually(detailedLog, pTeamInit, eTeamInit) {
 
     } else if (event.type === 'send_out') {
       const sideId = event.side === 'player' ? 'player-side' : 'enemy-side';
-      // Clear previous active highlight on this side
-      document.querySelectorAll(`#${sideId} .battle-pokemon`).forEach(el => el.classList.remove('active-pokemon'));
+      // Clear active highlight and any stale 'entering' state on ALL slots first
+      document.querySelectorAll(`#${sideId} .battle-pokemon`).forEach(el => {
+        el.classList.remove('active-pokemon');
+        el.querySelector('.battle-sprite')?.classList.remove('entering');
+      });
       const el = document.querySelector(`#${sideId} .battle-pokemon[data-idx="${event.idx}"]`);
       if (el) {
+        el.classList.remove('fainted'); // un-faint if revived (e.g. Flying trait)
         el.classList.add('active-pokemon');
         // Materialize entrance on the sprite.
         const spr = el.querySelector('.battle-sprite');
         if (spr) {
-          spr.classList.remove('entering');
           void spr.offsetWidth; // restart the animation on re-entry
           spr.classList.add('entering');
-          setTimeout(() => spr.classList.remove('entering'), 520);
+          const _enterDur2 = Math.max(80, Math.round(520 / battleSpeedMultiplier));
+          setTimeout(() => spr.classList.remove('entering'), _enterDur2);
         }
       }
       addLogEntry(`${event.name} was sent out!`, event.side === 'player' ? 'log-player' : 'log-enemy');
@@ -3836,11 +3843,8 @@ function openAchievementsModal() {
 
   const modal = document.createElement('div');
   modal.id = 'achievements-modal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;-webkit-overflow-scrolling:touch;';
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-
   modal.innerHTML = `
-    <div class="ach-modal-box" style="max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;width:min(520px,96vw);">
+    <div class="ach-modal-box">
       <div class="ach-modal-header">
         <span>Achievements (${unlocked.size}/${ACHIEVEMENTS.length})</span>
         <button class="ach-modal-close" onclick="document.getElementById('achievements-modal').remove()">✕</button>
@@ -3957,11 +3961,8 @@ async function openPokedexModal(initialTab = 'normal') {
 
   const modal = document.createElement('div');
   modal.id = 'pokedex-modal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;-webkit-overflow-scrolling:touch;';
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-
   modal.innerHTML = `
-    <div class="dex-modal-box" style="max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;width:min(520px,96vw);">
+    <div class="dex-modal-box">
       <div class="dex-modal-header">
         <div class="dex-tabs">
           <button class="dex-tab" data-tab="normal">📖 Pokédex</button>
@@ -4075,8 +4076,6 @@ function openDexDetailModal(speciesId, name, spriteUrl, shinySpriteUrl, types) {
 
   const modal = document.createElement('div');
   modal.id = 'dex-detail-modal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;-webkit-overflow-scrolling:touch;';
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
   modal.innerHTML = `
     <div class="dex-detail-box">
       <div class="dex-detail-header">
@@ -4842,8 +4841,6 @@ async function openHallOfFameModal() {
 
   const modal = document.createElement('div');
   modal.id = 'hof-modal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;-webkit-overflow-scrolling:touch;';
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
   modal.style.cssText = 'position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;';
 
   function entryMatchesFilter(e, filter) {
